@@ -22,5 +22,8 @@ module Demo
 
     # Do not swallow errors in after_commit/after_rollback callbacks.
     config.active_record.raise_in_transactional_callbacks = true
+    
+    # Use ssl certificate bundled with the gem package
+    Aws.use_bundled_cert!
   end
 end

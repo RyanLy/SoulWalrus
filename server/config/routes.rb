@@ -3,9 +3,9 @@ Rails.application.routes.draw do
   # http://andrewberls.com/blog/post/api-versioning-with-rails-4
   scope module: 'api' do
     namespace :v1 do
-
       resources 'eight_ball'
-
+      resources 'streamer'
+      resources 'motd'
     end
   end
 
