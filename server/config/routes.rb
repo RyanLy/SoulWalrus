@@ -6,6 +6,8 @@ Rails.application.routes.draw do
       resources 'eight_ball'
       resources 'streamer'
       resources 'motd'
+      match 'motd' => 'motd#update', :via => :patch
+      match 'streamer' => 'streamer#destroy', :via => :delete
     end
   end
 

@@ -22,7 +22,7 @@ Rails.application.configure do
 
   # Disable serving static files from the `/public` folder by default since
   # Apache or NGINX already handles this.
-  config.serve_static_files = ENV['RAILS_SERVE_STATIC_FILES'].present?
+  config.serve_static_files = true #ENV['RAILS_SERVE_STATIC_FILES'].present? # Set to true for now
 
   # Compress JavaScripts and CSS.
   config.assets.js_compressor = :uglifier
@@ -75,5 +75,13 @@ Rails.application.configure do
   config.log_formatter = ::Logger::Formatter.new
 
   # Do not dump schema after migrations.
-  config.active_record.dump_schema_after_migration = false
+  # config.active_record.dump_schema_after_migration = false
 end
+
+Dynamoid.configure do |config|
+    config.adapter = 'aws_sdk_v2' # This adapter establishes a connection to the DynamoDB servers using Amazon's own AWS gem.
+    config.namespace = 'soulwalrus_production' # To namespace tables created by Dynamoid from other tables you might have. Set to nil to avoid namespacing.
+    config.warn_on_scan = true # Output a warning to the logger when you perform a scan rather than a query on a table.
+    config.read_capacity = 5 # Read capacity for your tables
+    config.write_capacity = 5 # Write capacity for your tables
+  end
