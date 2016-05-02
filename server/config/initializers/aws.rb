@@ -1,3 +1,8 @@
+require_relative '../../app/models/Motd'
+require_relative '../../app/models/Streamer'
+require_relative '../../app/models/Eightball'
+require_relative '../../app/models/Log'
+
 # Be sure to restart your server when you modify this file.
 
 Aws.config.update({
