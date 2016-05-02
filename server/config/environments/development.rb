@@ -1,3 +1,5 @@
+require 'pusher'
+
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -47,3 +49,9 @@ Dynamoid.configure do |config|
     config.read_capacity = 5 # Read capacity for your tables
     config.write_capacity = 5 # Write capacity for your tables
   end
+  
+Pusher.app_id = '202818'
+Pusher.key = 'd7bac04aba128fb95645'
+Pusher.secret = '0a9c4fd3d52477493b71'
+Pusher.logger = Rails.logger
+Pusher.encrypted = true

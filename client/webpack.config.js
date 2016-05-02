@@ -2,14 +2,18 @@ var path = require('path'),
     webpack = require("webpack");
 
 module.exports = {
-    cache: true,
-    debug: true,
+    context: path.join(__dirname, 'dist'),
     devtool: 'eval',
+    entry: [
+      './init.js',
+      'webpack/hot/dev-server',
+      'webpack-dev-server/client?http://localhost:8080/',
+    ],
     output: {
-        path: path.join(__dirname, "build"),
-        filename: 'build.min.js'
+        path: path.join(__dirname, 'dist'),
+        filename: 'bundle.js'
     },
-    resolve: {
-        extensions: ['', '.js', '.json', '.coffee']
-    }
+    plugins: [
+      new webpack.HotModuleReplacementPlugin(),
+    ]
 };

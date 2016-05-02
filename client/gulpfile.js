@@ -12,11 +12,9 @@ else {
   environment = require("./config/development");
 }
 
-gulp.task("webpack", function(callback) {
+gulp.task("webpack", ['build'], function(callback) {
     // run webpack
-    webpack({
-        // configuration
-    }, function(err, stats) {
+    webpack(webpackConfig, function(err, stats) {
         if(err) throw new gutil.PluginError("webpack", err);
         gutil.log("[webpack]", stats.toString({
             // output options
@@ -26,13 +24,11 @@ gulp.task("webpack", function(callback) {
 });
 
 gulp.task("webpack-dev-server", function(callback) {
-    var myConfig = Object.create(webpackConfig);
-    myConfig.devtool = "eval";
-    myConfig.debug = true;
-
     // Start a webpack-dev-server
-    new WebpackDevServer(webpack(myConfig), {
-        contentBase: "./dist",
+    new WebpackDevServer(webpack(webpackConfig), {
+        contentBase: './dist',
+        hot: true,
+        filename: './init.js',
         stats: {
             colors: true
         }
@@ -42,9 +38,15 @@ gulp.task("webpack-dev-server", function(callback) {
     });
 });
 
+gulp.task('watch', function() {
+    gulp.watch(['init.js', 'index.html'], ['build']);
+});
+
 gulp.task("build", function() {
   gulp.src('index.html', {base: './'}).pipe(gulp.dest('dist'));
   gulp.src('init.js')
   .pipe(envify(environment))
   .pipe(gulp.dest('dist'));
 })
+
+gulp.task('default', ['build', 'webpack-dev-server', 'watch']);
