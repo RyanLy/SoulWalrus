@@ -12,4 +12,5 @@ class Streamer
   field :updated_at
   field :submitted_at, :datetime, {default: ->(){Time.now}}
   field :submitted_by
+  field :online
 end

@@ -76,6 +76,7 @@ GEM
       domain_name (~> 0.5)
     http-form_data (1.0.1)
     http_parser.rb (0.6.0)
+    httpclient (2.8.0)
     i18n (0.7.0)
     jbuilder (2.4.1)
       activesupport (>= 3.0.0, < 5.1)
@@ -96,6 +97,11 @@ GEM
     multi_json (1.11.3)
     nokogiri (1.6.7.2-x86-mingw32)
       mini_portile2 (~> 2.0.0.rc2)
+    pusher (0.17.0)
+      httpclient (~> 2.7)
+      multi_json (~> 1.0)
+      pusher-signature (~> 0.1.8)
+    pusher-signature (0.1.8)
     rack (1.6.4)
     rack-test (0.6.3)
       rack (>= 1.0)
@@ -129,6 +135,7 @@ GEM
     rake (11.1.2)
     rdoc (4.2.2)
       json (~> 1.4)
+    rufus-scheduler (3.2.0)
     sdoc (0.4.1)
       json (~> 1.7, >= 1.7.7)
       rdoc (~> 4.0)
@@ -165,8 +172,10 @@ DEPENDENCIES
   dynamoid (~> 1)
   http
   jbuilder (~> 2.0)
+  pusher
   rails (= 4.2.6)
   rails-api
+  rufus-scheduler
   sdoc (~> 0.4.0)
   turbolinks
   tzinfo-data

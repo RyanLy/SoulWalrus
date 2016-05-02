@@ -21,6 +21,11 @@ gem 'rails-api'
 # Easier API calling
 gem "http"
 
+# Pusher API
+gem 'pusher'
+
+gem 'rufus-scheduler'
+
 # Use ActiveModel has_secure_password
 # gem 'bcrypt', '~> 3.1.7'
 

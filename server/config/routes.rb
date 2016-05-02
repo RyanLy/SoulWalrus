@@ -3,11 +3,13 @@ Rails.application.routes.draw do
   # http://andrewberls.com/blog/post/api-versioning-with-rails-4
   scope module: 'api' do
     namespace :v1 do
-      resources 'eight_ball'
-      resources 'streamer'
-      resources 'motd'
+      match 'motd' => 'motd#index', :via => :get
       match 'motd' => 'motd#update', :via => :patch
+      match 'eight_ball' => 'eight_ball#index', :via => :get
+      match 'streamer' => 'streamer#index', :via => :get
+      match 'streamer' => 'streamer#create', :via => :post
       match 'streamer' => 'streamer#destroy', :via => :delete
+      match 'streamer/get-live' => 'streamer#getLive', :via => :get
     end
   end
 

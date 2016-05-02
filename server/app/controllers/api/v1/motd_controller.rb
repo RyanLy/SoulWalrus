@@ -21,6 +21,9 @@ module Api::V1
         motd[:message] = params[:message]
         motd[:submitted_by] = params[:submitted_by]
         motd.save
+        Pusher.trigger('motd', 'motd_update', {
+          result: motd
+        })
         render_and_log_to_db(json: {result: motd}, status: 200)
       else
         render_and_log_to_db(json: {error: 'Please specify a message'}, status: 400)
