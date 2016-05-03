@@ -10,6 +10,9 @@ Rails.application.routes.draw do
       match 'streamer' => 'streamer#create', :via => :post
       match 'streamer' => 'streamer#destroy', :via => :delete
       match 'streamer/get-live' => 'streamer#getLive', :via => :get
+      match 'skype' => 'skype_subscribe#index', :via => :get
+      match 'skype' => 'skype_subscribe#create', :via => :post
+      match 'skype' => 'skype_subscribe#destroy', :via => :delete
     end
   end
 

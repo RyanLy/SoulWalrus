@@ -8,7 +8,10 @@ var channelStreamer = pusher.subscribe('streamer');
 channelMotd.bind('motd_update', function(data) {
   $("#motd").text(data.result.message);
 });
-channelStreamer.bind('streamer_update', function(data) {
+channelStreamer.bind('streamer_added', function(data) {
+  $("#streamers").text(data.result);
+});
+channelStreamer.bind('streamer_removed', function(data) {
   $("#streamers").text(data.result);
 });
 channelStreamer.bind('streamer_online', function(data) {

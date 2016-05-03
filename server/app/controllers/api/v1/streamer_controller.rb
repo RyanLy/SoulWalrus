@@ -34,7 +34,8 @@ module Api::V1
               :online => false
             )
             streamer.save
-            Pusher.trigger('streamer', 'streamer_update', {
+            Pusher.trigger('streamer', 'streamer_added', {
+              result_added: streamer,
               result: Streamer.all.collect { |x| x['display_name'] }.sort
             })
             render_and_log_to_db(json: {result:  streamer}, :status => 200)
@@ -54,7 +55,8 @@ module Api::V1
         render_and_log_to_db(json: {error:  'Channel not on the list.'}, status: 400)
       else
         results[0].delete
-        Pusher.trigger('streamer', 'streamer_update', {
+        Pusher.trigger('streamer', 'streamer_removed', {
+          result_removed: results[0],
           result: Streamer.all.collect { |x| x['display_name'] }.sort
         })
         render_and_log_to_db(json: {result:  queryName +  ' deleted from the list.'}, status: 200)
