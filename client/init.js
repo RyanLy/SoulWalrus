@@ -36,7 +36,7 @@ $.ajax({
   }
 });
 
-function eightBall() {
+eightBall = function() {
   $.ajax({
     url: process.env.API_SERVER + 'eight_ball',
     success: function(res) {
