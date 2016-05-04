@@ -95,7 +95,7 @@ module Api::V1
         )
       end
       threads.each { |t| t.join }
-      return live
+      return live.sort! { |a,b| a['stream']['channel']['display_name'].downcase <=> b['stream']['channel']['display_name'].downcase }
     end
     
     def getLive
