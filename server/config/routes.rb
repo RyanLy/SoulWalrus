@@ -17,6 +17,7 @@ Rails.application.routes.draw do
       match 'hscard' => 'hs_card#index', :via => :get
       match 'csgo/bot-train-t' => 'csgo#bot_train_t', :via => :get
       match 'csgo/bot-train-ct' => 'csgo#bot_train_ct', :via => :get
+      match 'csgo/join-game' => 'csgo#join_game', :via => :get
     end
   end
 
