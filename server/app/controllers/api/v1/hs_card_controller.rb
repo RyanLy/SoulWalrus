@@ -15,7 +15,7 @@ module Api::V1
 
         chosen = nil
         chosen_length = 999
-        if response.code == 200
+        if response.code == 200 and not response.body.empty?
           for card in response.body
             difference = (card['name'].length - params['name'].length).abs
             if difference < chosen_length
