@@ -24,7 +24,6 @@ channelStreamer.bind('streamer_offline', function(data) {
 $.ajax({
   url: process.env.API_SERVER + 'motd',
   success: function(res) {
-    console.log("here")
     $("#motd").text(res.result.message);
   }
 });
