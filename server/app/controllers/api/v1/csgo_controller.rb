@@ -22,7 +22,7 @@ module Api::V1
           'bot_add_t;',
           'bot_add_t;',
           'bot_add_t;',
-          'bot_difficulty'
+          'bot_difficulty 3;'
         ] 
       }, status: 200)
      end
@@ -46,28 +46,32 @@ module Api::V1
            'bot_add_ct;',
            'bot_add_ct;',
            'bot_add_ct;',
-           'bot_difficulty'
+           'bot_difficulty 3;'
          ] 
        }, status: 200)
       end
 
     def self.create_lobby_link(player_object)
-      return "steam://joinlobby/730/%s/76561197990897837" % [ player_object['lobbysteamid'] ]
+      return "steam://joinlobby/730/%s/%s" % [ player_object['lobbysteamid'], player_object['steamid'] ]
     end
 
     def join_game
-      response = Unirest.get 'http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=%s&steamids=76561197990897837' % [ ENV['STEAM_KEY'] ]
-      if response.body['response']['players'][0]['lobbysteamid']
-        redirect_to Api::V1::CsgoController.create_lobby_link(response.body['response']['players'][0])
+      if params['id']
+        response = Unirest.get 'http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=%s&steamids=%s' % [ ENV['STEAM_KEY'], params['id'] ]
+        if response.body['response']['players'][0]['lobbysteamid']
+          redirect_to Api::V1::CsgoController.create_lobby_link(response.body['response']['players'][0])
+        else
+          render_and_log_to_db(json: { error: "Lobby not found" }, status: 400)
+        end
       else
-        render_and_log_to_db(json: { error: "Lobby not found" }, status: 400)
+        render_and_log_to_db(json: { error: "Please specify an id" }, status: 400)
       end
     end
     
     def self.pollLobby
       result = CsgoLobby.all
       for lobby in result
-        response = Unirest.get 'http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=%s&steamids=76561197990897837' % [ ENV['STEAM_KEY'] ]
+        response = Unirest.get 'http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=%s&steamids=%s' % [ ENV['STEAM_KEY'], lobby.id ]
         lobbyid = response.body['response']['players'][0]['lobbysteamid']
         if lobbyid and lobby.lobbyid != lobbyid
           Pusher.trigger('csgo', 'open_lobby', {
