@@ -19,6 +19,7 @@ Rails.application.routes.draw do
       match 'csgo/bot-train-ct' => 'csgo#bot_train_ct', :via => :get
       match 'csgo/join-game' => 'csgo#join_game', :via => :get
       match 'music' => 'music#get_recommendation', :via => :get
+      match 'play-song' => 'music#play_song', :via => :get
       match 'callback' => 'callback#index', :via => :get
     end
   end

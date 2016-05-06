@@ -33,14 +33,20 @@ module Api::V1
                                :limit => 20
                              }
       if response.body['tracks'].length > 0
-        new_results = response.body['tracks'].collect { |x| {'id' => x['id'],
-                                                             'name' => x['name'],
-                                                             'artists' => x['artists'].collect { |y| y['name'] },
-                                                             'link' => 'https://play.spotify.com/track/%s' % [ x['id'] ] } } 
+        new_results = response.body['tracks']
+                      .select { | s | s['is_playable']  }
+                      .collect { |x| {'id' => x['id'],
+                                      'name' => x['name'],
+                                      'artists' => x['artists'].collect { |y| y['name'] },
+                                      'link' => 'https://play.spotify.com/track/%s' % [ x['id'] ] } }
         render_and_log_to_db(json: {result: new_results[Random.rand(new_results.length)] }, status: 200)
       else
         render_and_log_to_db(json: {error: "No results" }, status: 400)
       end
+    end
+    
+    def play_song
+      redirect_to 'spotify:track:%s' % [params['id']]
     end
   end
 end
