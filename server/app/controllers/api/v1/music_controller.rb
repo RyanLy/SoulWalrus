@@ -91,19 +91,21 @@ module Api::V1
       else
         genre = @@SOUNDCLOUD_GENRES[Random.rand(@@SOUNDCLOUD_GENRES.length)]
         response = Unirest.get 'http://api.soundcloud.com/tracks?client_id=%s&genres=%s&format=json&order=hotness' % [ ENV['SOUNDCLOUD_CLIENT_ID'], genre]
-
-        new_results = response.body
-                      .select { | s | s['streamable']  }
-                      .collect { |x| {'type' => 'SOUNDCLOUD',
-                                      'id' => x['id'],
-                                      'name' => x['title'],
-                                      'genre' => x['genre'],
-                                      'artists' => [ x['user']['username'] ],
-                                      'link' => x['permalink_url']
-                                    } }
-        render_and_log_to_db(json: {result: new_results[Random.rand(new_results.length)] }, status: 200)
         
-        
+        if response.body.length > 0
+          new_results = response.body
+                        .select { | s | s['streamable']  }
+                        .collect { |x| {'type' => 'SOUNDCLOUD',
+                                        'id' => x['id'],
+                                        'name' => x['title'],
+                                        'genre' => x['genre'],
+                                        'artists' => [ x['user']['username'] ],
+                                        'link' => x['permalink_url']
+                                      } }
+          render_and_log_to_db(json: {result: new_results[Random.rand(new_results.length)] }, status: 200)
+        else
+          render_and_log_to_db(json: {error: "No results" }, status: 400)
+        end
       end
     end
     
