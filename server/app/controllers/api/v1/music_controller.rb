@@ -3,6 +3,15 @@ require 'unirest'
 module Api::V1
   class MusicController < ApiController
 
+    @@PROVIDER_SPOTIFY = 'spotify'
+    @@PROVIDER_SOUNDCLOUD = 'soundcloud'
+    
+
+    @@PROVIDERS = [
+      @@PROVIDER_SPOTIFY,
+      @@PROVIDER_SOUNDCLOUD
+    ]
+
     @@SOUNDCLOUD_GENRES = [
       'Alternative Rock',
       'Ambient',
@@ -188,7 +197,14 @@ module Api::V1
     end
 
     def get_recommendation
-      if rand() < 0.5
+      provider = nil
+      if params['provider'] and @@PROVIDERS.include? params['provider'].downcase
+        provider = params['provider'].downcase
+      else
+        provider = @@PROVIDERS[Random.rand(@@PROVIDERS.length)]
+      end
+
+      if provider == @@PROVIDER_SPOTIFY
         # TODO: Store token somewhere and only get a new token if neccessary
         access_token_response = Unirest.post 'https://accounts.spotify.com/api/token',
                                              parameters: {
