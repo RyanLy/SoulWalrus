@@ -52,7 +52,7 @@ module Api::V1
       end
 
     def self.create_lobby_link(player_object)
-      return "steam://joinlobby/730/%s/%s" % [ player_object['lobbysteamid'], player_object['steamid'] ]
+      return "steam://joinlobby/%s/%s/%s" % [ player_object['gameid'], player_object['lobbysteamid'], player_object['steamid'] ]
     end
 
     def join_game
