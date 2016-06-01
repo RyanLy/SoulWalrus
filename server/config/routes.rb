@@ -21,6 +21,9 @@ Rails.application.routes.draw do
       match 'music' => 'music#get_recommendation', :via => :get
       match 'play-song' => 'music#play_song', :via => :get
       match 'callback' => 'callback#index', :via => :get
+      match 'twilio' => 'twilio_subscribe#index', :via => :get
+      #match 'twilio' => 'twilio_subscribe#create', :via => :post
+      #match 'twilio' => 'twilio_subscribe#destroy', :via => :delete
     end
   end
 

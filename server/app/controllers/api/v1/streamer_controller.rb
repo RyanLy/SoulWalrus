@@ -6,6 +6,7 @@ module Api::V1
     
     @@TWITCH_STREAM_ENDPOINT = 'https://api.twitch.tv/kraken/streams/'
     @@TWITCH_USERS_ENDPOINT = 'https://api.twitch.tv/kraken/users/'
+    @@TWILIO_CLIENT = Twilio::REST::Client.new
 
     def index
       result = Streamer.all.collect { |x| x['display_name'] }.sort
@@ -17,7 +18,8 @@ module Api::V1
         queryName = params['id'].downcase
       
         if Streamer.where(:name => queryName).all.empty?
-          res = HTTP.get(@@TWITCH_USERS_ENDPOINT + queryName)
+          res = HTTP.headers("Client-ID": ENV['TWITCH_CLIENT_ID'])
+                    .get(@@TWITCH_USERS_ENDPOINT + queryName)
           result = JSON.parse(res.to_s)
 
           if result['error']
@@ -71,24 +73,40 @@ module Api::V1
       for streamer in streamers
         threads.push(
           Thread.new(streamer) do |streamer| 
-            res = HTTP.get(streamer['stream'])
+            res = HTTP.headers("Client-ID": ENV['TWITCH_CLIENT_ID'])
+                      .get(streamer['stream'])
             result = JSON.parse(res.to_s)
+            # Questionable logic. Temporary fix for stream update bugs
             if result['stream']
               live.push(result)
               if streamer['online'] == 'false'
-                streamer['online'] = true
+                streamer['online'] = 'true'
                 streamer.save
                 Pusher.trigger('streamer', 'streamer_online', {
                   result: streamer
                 })
+                numbers = @@TWILIO_CLIENT.outgoing_caller_ids.list.collect { |x| x.phone_number }.sort
+                for number in numbers
+                  @@TWILIO_CLIENT.messages.create(
+                    from: '+12048171908',
+                    to: number,
+                    body: '%s is online! - https://www.twitch.tv/%s' % [ streamer['display_name'], streamer['name'] ]
+                  )
+                end
+              elsif streamer['online'] == 'uncertain'
+                streamer['online'] = 'true'
+                streamer.save
               end
             else
-              if streamer['online'] == 'true'
-                streamer['online'] = false
+              if streamer['online'] == 'uncertain'
+                streamer['online'] = 'false'
                 streamer.save
                 Pusher.trigger('streamer', 'streamer_offline', {
                   result: streamer
                 })
+              elsif streamer['online'] == 'true'
+                streamer['online'] = 'uncertain'
+                streamer.save
               end
             end
           end
