@@ -5,6 +5,7 @@ require_relative '../../app/models/Log'
 require_relative '../../app/models/SkypeSubscribe'
 require_relative '../../app/models/CsgoLobby'
 require_relative '../../app/models/TwilioSubscribe'
+require_relative '../../app/models/SkypeSubscribe2'
 
 # Be sure to restart your server when you modify this file.
 
@@ -23,4 +24,4 @@ Eightball.create_table
 Log.create_table
 SkypeSubscribe.create_table
 CsgoLobby.create_table
-TwilioSubscribe.create_table
+SkypeSubscribe2.create_table

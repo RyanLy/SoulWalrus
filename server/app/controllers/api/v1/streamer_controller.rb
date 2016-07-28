@@ -85,14 +85,14 @@ module Api::V1
                 Pusher.trigger('streamer', 'streamer_online', {
                   result: streamer
                 })
-                numbers = @@TWILIO_CLIENT.outgoing_caller_ids.list.collect { |x| x.phone_number }.sort
-                for number in numbers
-                  @@TWILIO_CLIENT.messages.create(
-                    from: '+12048171908',
-                    to: number,
-                    body: '%s is online! - https://www.twitch.tv/%s' % [ streamer['display_name'], streamer['name'] ]
-                  )
-                end
+                # numbers = @@TWILIO_CLIENT.outgoing_caller_ids.list.collect { |x| x.phone_number }.sort
+                # for number in numbers
+                #   @@TWILIO_CLIENT.messages.create(
+                #     from: '+12048171908',
+                #     to: number,
+                #     body: '%s is online! - https://www.twitch.tv/%s' % [ streamer['display_name'], streamer['name'] ]
+                #   )
+                # end
               elsif streamer['online'] == 'uncertain'
                 streamer['online'] = 'true'
                 streamer.save

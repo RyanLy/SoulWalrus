@@ -13,6 +13,9 @@ Rails.application.routes.draw do
       match 'skype' => 'skype_subscribe#index', :via => :get
       match 'skype' => 'skype_subscribe#create', :via => :post
       match 'skype' => 'skype_subscribe#destroy', :via => :delete
+      match 'skype2' => 'skype_subscribe2#index', :via => :get
+      match 'skype2' => 'skype_subscribe2#create', :via => :post
+      match 'skype2' => 'skype_subscribe2#destroy', :via => :delete
       match 'hscard/:name' => 'hs_card#index', :via => :get
       match 'hscard' => 'hs_card#index', :via => :get
       match 'csgo/bot-train-t' => 'csgo#bot_train_t', :via => :get
