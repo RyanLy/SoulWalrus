@@ -25,3 +25,4 @@ Log.create_table
 SkypeSubscribe.create_table
 CsgoLobby.create_table
 SkypeSubscribe2.create_table
+Point.create_table

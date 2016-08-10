@@ -27,6 +27,9 @@ Rails.application.routes.draw do
       match 'twilio' => 'twilio_subscribe#index', :via => :get
       #match 'twilio' => 'twilio_subscribe#create', :via => :post
       #match 'twilio' => 'twilio_subscribe#destroy', :via => :delete
+      match 'point' => 'point#index', :via => :get
+      match 'point' => 'point#create', :via => :post
+      match 'point' => 'point#update', :via => :put
     end
   end
 

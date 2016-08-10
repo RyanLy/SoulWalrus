@@ -9,3 +9,9 @@ end
 scheduler.every '1m' do
   Api::V1::CsgoController.pollLobby
 end
+
+scheduler.every '1m' do
+  if Random.rand(120) == 0
+    Api::V1::PointController.create_points
+  end
+end
