@@ -6,6 +6,7 @@ require_relative '../../app/models/SkypeSubscribe'
 require_relative '../../app/models/CsgoLobby'
 require_relative '../../app/models/TwilioSubscribe'
 require_relative '../../app/models/SkypeSubscribe2'
+require_relative '../../app/models/Point'
 
 # Be sure to restart your server when you modify this file.
 
