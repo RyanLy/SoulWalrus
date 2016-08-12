@@ -45,9 +45,15 @@ module Api::V1
     end
     
     def self.create_points
+      c = 2*Random.rand(151*(151+1)/2)
+      n = 152 - ((1 + Math.sqrt(1**2 + 4*c))/2).to_int
+      
+      p "Spin to win: #{n}"
       point = Point.new(
-        :user => nil,
-        :description => 'Points v1'
+        user: nil,
+        description: 'Points v1',
+        friendly_id: n,
+        friendly_name: Pokemon.pokemon_info[n-1][:name].capitalize
       )
       point.save
       Pusher.trigger('point', 'point_created', {

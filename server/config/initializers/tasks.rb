@@ -10,8 +10,11 @@ scheduler.every '1m' do
   Api::V1::CsgoController.pollLobby
 end
 
-scheduler.every '1m' do
-  if Random.rand(120) == 0
+scheduler.every '30s' do
+  generated = Random.rand(120)
+  p "Try to create a point: #{generated}"
+  if generated == 0
+    p 'Creating a point'
     Api::V1::PointController.create_points
   end
 end

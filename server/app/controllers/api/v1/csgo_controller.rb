@@ -72,7 +72,7 @@ module Api::V1
       result = CsgoLobby.all
       for lobby in result
         response = Unirest.get 'http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=%s&steamids=%s' % [ ENV['STEAM_KEY'], lobby.id ]
-        lobbyid = response.body['response']['players'][0]['lobbysteamid']
+        lobbyid = response.body['response'] && response.body['response']['players'] && response.body['response']['players'][0] && response.body['response']['players'][0]['lobbysteamid']
         if lobbyid and lobby.lobbyid != lobbyid
           Pusher.trigger('csgo', 'open_lobby', {
             result: response.body['response']['players'][0]
