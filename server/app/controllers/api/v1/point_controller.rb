@@ -2,7 +2,7 @@ module Api::V1
   class PointController < ApiController
 
     def index
-      all_users = Point.all.collect { |x| (x['user'] and x['user']['name']) || 'Not Claimed' }.sort
+      all_users = Point.all.collect { |x| x['user_name'] || 'Not Claimed' }.sort
       result = {}
       all_users.each do |user|
         result[user] = 0 if result[user].nil?
@@ -10,14 +10,29 @@ module Api::V1
       end
       render_and_log_to_db(json: {result: result}, status: 200)
     end
+    
+    def get_most_recent
+      points = Point.eval_limit(5).all
+      render_and_log_to_db(json: {result: points}, status: 200)
+    end
+    
+    def get_user
+      points = Point.where(user_name: allowed_params['user_name']).all
+      if points
+        render_and_log_to_db(json: {result: points}, status: 200)
+      else
+        render_and_log_to_db(json: {error: 'Nothing found.'}, status: 400)
+      end
+    end
 
     def create
       render_and_log_to_db(json: {error: 'Non-existent secret'}, status: 400) unless allowed_params['point_secret']
       
       if allowed_params['point_secret'] == ENV['POINT_SECRET']
         point = Point.new(
-          :user => nil,
-          :description => 'Points v1'
+          user: nil,
+          description: 'Points v1',
+          create_date: DateTime.now
         )
         point.save
         render_and_log_to_db(json: {result: point}, status: 200)
@@ -30,14 +45,22 @@ module Api::V1
       render_and_log_to_db(json: {error: 'Please specify an point_id'}, status: 400) unless allowed_params['point_id']
       
       if allowed_params['point_secret'] == ENV['POINT_SECRET']
-        point = Point.find(allowed_params['point_id'])
-
+        point = Point.where(id: allowed_params['point_id']).all[0]
+        
+        # TODO: Fix race condition
         if !point
           render_and_log_to_db(json: {error: 'Invalid point id. Nice try...'}, status: 400)
-        elsif point['user'].nil?
+        elsif point.user.nil?
           point.user = allowed_params['user']
-          point.save
-          render_and_log_to_db(json: {result: point}, status: 200)
+          point.user_name = allowed_params['user']['name']
+          point.user_id = allowed_params['user']['id']
+          point.capture_date = DateTime.now
+          if Point.where(id: allowed_params['point_id']).all[0].user.nil?
+            point.save
+            render_and_log_to_db(json: {result: point}, status: 200)
+          else
+            render_and_log_to_db(json: {error: "This point has already been taken by #{point['user']['name']}."}, status: 400)
+          end
         else
           render_and_log_to_db(json: {error: "This point has already been taken by #{point['user']['name']}."}, status: 400)
         end
@@ -52,6 +75,7 @@ module Api::V1
       point = Point.new(
         user: nil,
         description: 'Points v1',
+        create_date: DateTime.now,
         friendly_id: n,
         friendly_name: Pokemon.pokemon_info[n-1][:name].capitalize
       )
@@ -67,7 +91,9 @@ module Api::V1
       params.permit([
         [user: [:id, :name]],
         :point_secret,
-        :point_id
+        :point_id,
+        :user_id,
+        :user_name
       ])
     end
   end
