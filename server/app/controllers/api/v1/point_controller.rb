@@ -12,8 +12,11 @@ module Api::V1
     end
     
     def get_most_recent
-      points = Point.eval_limit(5).all
-      render_and_log_to_db(json: {result: points}, status: 200)
+      points = Point.all.sort do |a, b|
+        b.create_date.to_i <=> a.create_date.to_i
+      end
+
+      render_and_log_to_db(json: {result: points[0..4]}, status: 200)
     end
     
     def get_user
@@ -31,6 +34,8 @@ module Api::V1
       if allowed_params['point_secret'] == ENV['POINT_SECRET']
         point = Point.new(
           user: nil,
+          user_name: nil,
+          user_id: nil,
           description: 'Points v1',
           create_date: DateTime.now
         )
@@ -45,8 +50,7 @@ module Api::V1
       render_and_log_to_db(json: {error: 'Please specify an point_id'}, status: 400) unless allowed_params['point_id']
       
       if allowed_params['point_secret'] == ENV['POINT_SECRET']
-        point = Point.where(id: allowed_params['point_id']).all[0]
-        
+        point = Point.find_by_id(allowed_params['point_id'])
         # TODO: Fix race condition
         if !point
           render_and_log_to_db(json: {error: 'Invalid point id. Nice try...'}, status: 400)
@@ -55,12 +59,13 @@ module Api::V1
           point.user_name = allowed_params['user']['name']
           point.user_id = allowed_params['user']['id']
           point.capture_date = DateTime.now
-          if Point.where(id: allowed_params['point_id']).all[0].user.nil?
+          if Point.find_by_id(allowed_params['point_id']).user.nil?
             point.save
             render_and_log_to_db(json: {result: point}, status: 200)
           else
             render_and_log_to_db(json: {error: "This point has already been taken by #{point['user']['name']}."}, status: 400)
           end
+
         else
           render_and_log_to_db(json: {error: "This point has already been taken by #{point['user']['name']}."}, status: 400)
         end
@@ -74,6 +79,8 @@ module Api::V1
       p "Spin to win: #{n}"
       point = Point.new(
         user: nil,
+        user_name: nil,
+        user_id: nil,
         description: 'Points v1',
         create_date: DateTime.now,
         friendly_id: n,

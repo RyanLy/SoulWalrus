@@ -1,8 +1,6 @@
 class Point
   include Dynamoid::Document
-
   table :name => :point, :key => :id
-  range :create_date, :datetime
 
   field :user, :serialized
   field :points
@@ -11,5 +9,6 @@ class Point
   field :friendly_name
   field :user_name
   field :user_id
+  field :create_date, :datetime
   field :capture_date, :datetime
 end
