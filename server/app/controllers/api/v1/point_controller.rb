@@ -20,7 +20,22 @@ module Api::V1
     end
     
     def get_user
-      points = Point.where(user_name: allowed_params['user_name']).all
+      points = Point.where(user_name: allowed_params['user_name']).all.sort do |a, b|
+        b.create_date.to_i <=> a.create_date.to_i
+      end
+      
+      if points
+        render_and_log_to_db(json: {result: points}, status: 200)
+      else
+        render_and_log_to_db(json: {error: 'Nothing found.'}, status: 400)
+      end
+    end
+    
+    def get_pokemon
+      points = Point.where(friendly_id: params['friendly_id']).all.sort do |a, b|
+        b.create_date.to_i <=> a.create_date.to_i
+      end
+      
       if points
         render_and_log_to_db(json: {result: points}, status: 200)
       else
@@ -61,6 +76,9 @@ module Api::V1
           point.capture_date = DateTime.now
           if Point.find_by_id(allowed_params['point_id']).user.nil?
             point.save
+            Pusher.trigger('point', 'point_updated', {
+              result: point
+            })
             render_and_log_to_db(json: {result: point}, status: 200)
           else
             render_and_log_to_db(json: {error: "This point has already been taken by #{point['user']['name']}."}, status: 400)

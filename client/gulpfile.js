@@ -1,9 +1,13 @@
-var envify = require('gulp-envify');
-var gulp = require("gulp");
+var gulp = require('gulp');
+var concat = require('gulp-concat');
+var uglify = require('gulp-uglify');
+var sourcemaps = require('gulp-sourcemaps');
 var gutil = require("gulp-util");
 var webpack = require("webpack");
 var WebpackDevServer = require("webpack-dev-server");
 var webpackConfig = require("./webpack.config.js");
+var stream = require('webpack-stream');
+var sass = require('gulp-sass');
 
 if (process.env.NODE_ENV === 'production') {
   environment = require("./config/production");
@@ -12,41 +16,71 @@ else {
   environment = require("./config/development");
 }
 
-gulp.task("webpack", ['build'], function(callback) {
-    // run webpack
-    webpack(webpackConfig, function(err, stats) {
-        if(err) throw new gutil.PluginError("webpack", err);
-        gutil.log("[webpack]", stats.toString({
-            // output options
-        }));
-        callback();
-    });
+var path = {
+  ALL: ['src/**/*.jsx', 'src/**/*.js'],
+  CSS: ['styles/**/*.sass'],
+  DEST_BUILD: 'dist/build',
+};
+
+gulp.task('styles', [], function () {
+  gulp.src('styles/**/*.sass')
+    .pipe(sass())
+    // .pipe(gulp.dest('./tmp'))
+    .pipe(concat('build.min.css'))
+    // .pipe(autoprefixer())
+    .pipe(gulp.dest(path.DEST_BUILD));
 });
 
+gulp.task('webpack', [], function() {
+  return gulp.src(path.ALL) // gulp looks for all source files under specified path
+             .pipe(sourcemaps.init()) // creates a source map which would be very helpful for debugging by maintaining the actual source code structure
+             .pipe(stream(webpackConfig)) // blend in the webpack config into the source files
+             .pipe(uglify()) // minifies the code for better compression
+             .pipe(sourcemaps.write())
+             .pipe(gulp.dest(path.DEST_BUILD))
+});
+
+gulp.task('index', function() {
+  return gulp.src('index.html')
+             .pipe(gulp.dest(path.DEST_BUILD))
+});
+ 
 gulp.task("webpack-dev-server", function(callback) {
-    // Start a webpack-dev-server
-    new WebpackDevServer(webpack(webpackConfig), {
-        contentBase: './dist',
-        hot: true,
-        filename: './init.js',
-        stats: {
-            colors: true
+  // modify some webpack config options
+  var myConfig = Object.create(webpackConfig);
+  new WebpackDevServer(webpack(myConfig), {
+    publicPath: "/",
+    hot: true,
+    inline: true,
+    stats: {
+      colors: true
+    },
+    proxy: {
+      '/v1/*': {
+        target: environment.API_SERVER,
+        secure: false,
+        bypass: function(req, res, proxyOptions) {
+          if (req.headers.accept.indexOf('html') !== -1) {
+            console.log('Skipping proxy for browser request.');
+            return '/index.html';
+          }
         }
-    }).listen(8080, "localhost", function(err) {
-        if (err) throw new gutil.PluginError("webpack-dev-server", err);
-        gutil.log("[webpack-dev-server]", "http://localhost:8080");
-    });
+      }
+    },
+    historyApiFallback: {
+      index: 'index.html'
+    },
+  }).listen(8080, "localhost", function(err) {
+  if (err) throw new gutil.PluginError("webpack-dev-server", err);
+    gutil.log("[webpack-dev-server]", "http://localhost:8080/webpack-dev-server/index.html");
+  });
 });
 
 gulp.task('watch', function() {
-    gulp.watch(['init.js', 'index.html'], ['build']);
+  // gulp.watch(path.ALL, ['webpack']);
+  gulp.watch(path.CSS, ['styles']);
 });
 
-gulp.task("build", function() {
-  gulp.src('index.html', {base: './'}).pipe(gulp.dest('dist'));
-  gulp.src('init.js')
-  .pipe(envify(environment))
-  .pipe(gulp.dest('dist'));
-})
+gulp.task('build', ['webpack', 'styles', 'index']);
 
-gulp.task('default', ['build', 'webpack-dev-server', 'watch']);
+gulp.task('default', ['webpack-dev-server', 'watch']);

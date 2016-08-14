@@ -33,6 +33,7 @@ Rails.application.routes.draw do
       match 'point/most-recent' => 'point#get_most_recent', :via => :get
       
       match 'point/:user_name' => 'point#get_user', :via => :get
+      match 'point-id/:friendly_id' => 'point#get_pokemon', :via => :get
     end
   end
 
