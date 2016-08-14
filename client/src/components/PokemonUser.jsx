@@ -43,7 +43,7 @@ class PokemonUser extends React.Component {
     return (
       <div>
         <div className="container">
-          <h1> {this.props.params.user_name + " - 's"} Pokemon </h1>
+          <h1> {this.props.params.user_name + "'s - "} Pokemon </h1>
           {
             this.state.loading
             ?
