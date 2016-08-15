@@ -8,7 +8,7 @@ import PokeTable from './PokeTable.jsx';
 import Loading from './Loading.jsx';
 import Leaderboard from './Leaderboard.jsx';
 import Error from './Error.jsx';
-
+import FontIcon from 'material-ui/FontIcon';
 
 let pusher = new Pusher(ENVIRONMENT.PUSHER_APP_ID, {
   encrypted: true
@@ -21,7 +21,8 @@ class Pokemon extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      loading: true,
+      loading_most_recent: true,
+      loading_leaderboard: true,
       points: [],
       leaderboard: {},
     };
@@ -36,7 +37,7 @@ class Pokemon extends React.Component {
     .end(function(err, res){
       self.setState({
         points: res.body.result,
-        loading: false,
+        loading_most_recent: false,
       });
     });
 
@@ -45,6 +46,7 @@ class Pokemon extends React.Component {
     .end(function(err, res){
       self.setState({
         leaderboard: res.body.result,
+        loading_leaderboard: false,
       });
     });
 
@@ -81,17 +83,23 @@ class Pokemon extends React.Component {
         <h1> Recent 5 Pokemon and Leaderboards</h1>
         <hr/>
         <Tabs>
-          <Tab label="Recent">
+          <Tab icon={<FontIcon className="material-icons">replay_5</FontIcon>} label="Recent">
             {
-             this.state.loading
-             ?
-             <Loading />
-             :
-             <PokeTable points={this.state.points} />
+              this.state.loading_most_recent
+              ?
+              <Loading />
+              :
+              <PokeTable points={this.state.points} />
             }
           </Tab>
-          <Tab label="Leaderboards">
-            <Leaderboard leaderboard={this.state.leaderboard}/>
+          <Tab icon={<FontIcon className="material-icons">star</FontIcon>} label="Leaderboards">
+            {
+              this.state.loading_leaderboard
+              ?
+              <Loading />
+              :
+              <Leaderboard leaderboard={this.state.leaderboard}/>
+            }
           </Tab>
         </Tabs>
       </div>

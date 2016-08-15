@@ -49,9 +49,9 @@ class PokeTable extends React.Component {
           adjustForCheckbox={false}>
           <TableRow>
             <TableHeaderColumn className='table-row-image'>Pokemon</TableHeaderColumn>
-            <TableHeaderColumn>Appeared At</TableHeaderColumn>
+            <TableHeaderColumn className='hidden-xs'>Appeared At</TableHeaderColumn>
             <TableHeaderColumn>Captured By</TableHeaderColumn>
-            <TableHeaderColumn>Captured At</TableHeaderColumn>
+            <TableHeaderColumn className='hidden-xs'>Captured At</TableHeaderColumn>
           </TableRow>
         </TableHeader>
         <TableBody displayRowCheckbox={false}>
@@ -66,9 +66,9 @@ class PokeTable extends React.Component {
                       />
                     </Link>
                   </TableRowColumn>
-                  <TableRowColumn>{moment(point.create_date).format('LLLL')}</TableRowColumn>
+                  <TableRowColumn className='hidden-xs'>{moment(point.create_date).format('LLLL')}</TableRowColumn>
                   <TableRowColumn>{self.renderUserNameLink(point.user_name)}</TableRowColumn>
-                  <TableRowColumn>{ (point.capture_date && moment(point.capture_date).format('LLLL')) || 'Uncaptured'}</TableRowColumn>
+                  <TableRowColumn className='hidden-xs'>{ (point.capture_date && moment(point.capture_date).format('LLLL')) || 'Uncaptured'}</TableRowColumn>
                 </TableRow>
               )
             })

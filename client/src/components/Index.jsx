@@ -6,7 +6,7 @@ import AppBar from 'material-ui/AppBar';
 import Drawer from 'material-ui/Drawer';
 import MenuItem from 'material-ui/MenuItem';
 import FontIcon from 'material-ui/FontIcon';
-import {blue500, red500, greenA200} from 'material-ui/styles/colors';
+import {brown500, blue500} from 'material-ui/styles/colors';
 
 class Index extends React.Component {
   
@@ -42,39 +42,34 @@ class Index extends React.Component {
   handleClose() { this.setState({open: false}) }
   
   render() {
-    let styles = {
-      top: '64px'
-    }
-    
-    let overlayStyle = {
-      opacity: 0
-    }
-    
-    let pointerStyle = {
-      cursor: 'pointer'
-    }
     return (
       <div>
-        <AppBar title="SoulWalrus" onTitleTouchTap={() => browserHistory.push('/')} titleStyle={pointerStyle  } onLeftIconButtonTouchTap={this.handleToggle.bind(this)} />
-          <Drawer docked={false} overlayStyle={overlayStyle} containerStyle={styles} open={this.state.open} onRequestChange={(open) => this.setState({open})}>
-            <Link to="/" className="router-link--underline--false">
-              <MenuItem primaryText="Index"
-                        onTouchTap={this.handleClose.bind(this)}
-                        leftIcon={
-                          <FontIcon className="material-icons" color={blue500}>home</FontIcon>
-                        }
-              />
-            </Link>
-            <Link to="/pokemon" className="router-link--underline--false">
-              <MenuItem primaryText="Pokemon"
-                        onTouchTap={this.handleClose.bind(this)}
-                        leftIcon={
-                          <FontIcon className="material-icons" color={greenA200}>pets</FontIcon>
-                        }
-              />
-            </Link>
-          </Drawer>
-        { this.props.children }
+        <AppBar style={{top: 0, position: 'fixed'}} title="SoulWalrus" onTitleTouchTap={() => browserHistory.push('/')} titleStyle={ {cursor: 'pointer'} } onLeftIconButtonTouchTap={this.handleToggle.bind(this)} />
+        <Drawer docked={false} overlayStyle={ { opacity: 0 }} containerStyle={{
+            height: 'calc(100% - 64px)',
+            top: '64px',
+            bottom: 0
+          }} open={this.state.open} onRequestChange={(open) => this.setState({open})}>
+          <Link to="/" className="router-link--underline--false">
+            <MenuItem primaryText="Index"
+                      onTouchTap={this.handleClose.bind(this)}
+                      leftIcon={
+                        <FontIcon className="material-icons" color={blue500}>home</FontIcon>
+                      }
+            />
+          </Link>
+          <Link to="/pokemon" className="router-link--underline--false">
+            <MenuItem primaryText="Pokemon"
+                      onTouchTap={this.handleClose.bind(this)}
+                      leftIcon={
+                        <FontIcon className="material-icons" color={brown500}>pets</FontIcon>
+                      }
+            />
+          </Link>
+        </Drawer>
+        <div className="margin-top-app-bar">
+          { this.props.children }
+        </div>
       </div>
     )
   }

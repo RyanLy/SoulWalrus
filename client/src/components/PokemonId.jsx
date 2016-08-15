@@ -43,6 +43,7 @@ class PokemonId extends React.Component {
         <h1>Results for id: {this.props.params.friendly_id}
             {this.state.points && this.state.points.length > 0 && (" - " + this.state.points[0].friendly_name) }
         </h1>
+        <hr/>
         {
           this.state.loading
           ?

@@ -13,6 +13,17 @@ class Leaderboard extends React.Component {
     super(props);
   }
   
+  
+  renderUserNameLink(user_name) {
+    return(
+          user_name !== 'Not Claimed'
+          ?
+          <Link to={'/pokemon-user/' + user_name} className="router-link--underline--false"> {user_name} </Link>
+          :
+          'Not Claimed'
+    )
+  }
+  
   render() {
     let self = this;
     const style = {
@@ -35,7 +46,7 @@ class Leaderboard extends React.Component {
           <TableRow>
             <TableHeaderColumn>User</TableHeaderColumn>
             <TableHeaderColumn>Pokemon caught</TableHeaderColumn>
-            <TableHeaderColumn>Rarest Pokemon</TableHeaderColumn>
+            <TableHeaderColumn className='hidden-xs'>Rarest Pokemon</TableHeaderColumn>
           </TableRow>
         </TableHeader>
         <TableBody displayRowCheckbox={false}>
@@ -43,13 +54,11 @@ class Leaderboard extends React.Component {
             Object.keys(this.props.leaderboard).sort().map(function(key) {
               return (
                 <TableRow key={key}>
-                  <TableRowColumn>
-                    {key}
-                  </TableRowColumn>
+                  <TableRowColumn>{self.renderUserNameLink(key)}</TableRowColumn>
                   <TableRowColumn>
                     {self.props.leaderboard[key].points}
                   </TableRowColumn>
-                  <TableRowColumn>
+                  <TableRowColumn className='hidden-xs'>
                     <Link to={'/pokemon-id/' + self.props.leaderboard[key].best_pokemon.friendly_id} className="router-link--underline--false">
                       <Paper style={style} zDepth={2} circle={true} children={  
                         <img style={img_style}
