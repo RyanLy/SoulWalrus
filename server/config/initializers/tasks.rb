@@ -11,10 +11,10 @@ scheduler.every '1m' do
 end
 
 scheduler.every '30s' do
-  generated = Random.rand(1)
-  # p "Try to create a point: #{generated}"
+  generated = Random.rand(120)
+  p "Try to create a point: #{generated}"
   if generated == 0
-    # p 'Creating a point'
+    p 'Creating a point'
     Api::V1::PointController.create_points
   end
 end
