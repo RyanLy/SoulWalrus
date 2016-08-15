@@ -30,6 +30,7 @@ Rails.application.routes.draw do
       match 'point' => 'point#index', :via => :get
       match 'point' => 'point#create', :via => :post
       match 'point' => 'point#update', :via => :put
+      match 'point/leaderboard' => 'point#leaderboard', :via => :get
       match 'point/most-recent' => 'point#get_most_recent', :via => :get
       
       match 'point/:user_name' => 'point#get_user', :via => :get

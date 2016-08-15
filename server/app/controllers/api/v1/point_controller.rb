@@ -11,6 +11,25 @@ module Api::V1
       render_and_log_to_db(json: {result: result}, status: 200)
     end
     
+    def leaderboard
+      result = {}
+      Point.all.each do |point|
+        user_name = point['user_name'] || 'Not Claimed'
+        if result[user_name].nil?
+          result[user_name] = {}
+          result[user_name]['points'] = 0
+        end
+
+        if result[user_name]['best_pokemon'].nil? or point['friendly_id'].to_i > result[user_name]['best_pokemon']['friendly_id'].to_i
+          result[user_name]['best_pokemon'] = point
+        end
+        
+        result[user_name]['points'] += 1
+      end
+      render_and_log_to_db(json: {result: result}, status: 200)
+    end
+    
+    
     def get_most_recent
       points = Point.all.sort do |a, b|
         b.create_date.to_i <=> a.create_date.to_i

@@ -5,6 +5,8 @@ import request from 'superagent'
 import AppBar from 'material-ui/AppBar';
 import Drawer from 'material-ui/Drawer';
 import MenuItem from 'material-ui/MenuItem';
+import FontIcon from 'material-ui/FontIcon';
+import {blue500, red500, greenA200} from 'material-ui/styles/colors';
 
 class Index extends React.Component {
   
@@ -14,6 +16,8 @@ class Index extends React.Component {
   }
 
   componentDidMount() {
+    Notification.requestPermission()
+    
     let pusher = new Pusher(ENVIRONMENT.PUSHER_APP_ID, {
       encrypted: true
     });
@@ -35,7 +39,6 @@ class Index extends React.Component {
   
   handleToggle() { this.setState({open: !this.state.open}) }
       
-      
   handleClose() { this.setState({open: false}) }
   
   render() {
@@ -55,10 +58,20 @@ class Index extends React.Component {
         <AppBar title="SoulWalrus" onTitleTouchTap={() => browserHistory.push('/')} titleStyle={pointerStyle  } onLeftIconButtonTouchTap={this.handleToggle.bind(this)} />
           <Drawer docked={false} overlayStyle={overlayStyle} containerStyle={styles} open={this.state.open} onRequestChange={(open) => this.setState({open})}>
             <Link to="/" className="router-link--underline--false">
-              <MenuItem onTouchTap={this.handleClose.bind(this)}>Index</MenuItem>
+              <MenuItem primaryText="Index"
+                        onTouchTap={this.handleClose.bind(this)}
+                        leftIcon={
+                          <FontIcon className="material-icons" color={blue500}>home</FontIcon>
+                        }
+              />
             </Link>
             <Link to="/pokemon" className="router-link--underline--false">
-              <MenuItem onTouchTap={this.handleClose.bind(this)}>Pokemon</MenuItem>
+              <MenuItem primaryText="Pokemon"
+                        onTouchTap={this.handleClose.bind(this)}
+                        leftIcon={
+                          <FontIcon className="material-icons" color={greenA200}>pets</FontIcon>
+                        }
+              />
             </Link>
           </Drawer>
         { this.props.children }

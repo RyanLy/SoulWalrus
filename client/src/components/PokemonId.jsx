@@ -14,8 +14,7 @@ class PokemonId extends React.Component {
   }
   
   componentDidMount() {
-    Notification.requestPermission()
-    self = this;
+    let self = this;
     request
     .get(`/v1/point-id/${this.props.params.friendly_id}`)
     .end(function(err, res){
@@ -40,19 +39,17 @@ class PokemonId extends React.Component {
       borderRadius: '50%'
     }
     return (
-      <div>
-        <div className="container">
-          <h1>Results for id: {this.props.params.friendly_id}
-              {this.state.points && this.state.points.length > 0 && (" - " + this.state.points[0].friendly_name) }
-          </h1>
-          {
-            this.state.loading
-            ?
-            <Loading />
-            :
-            <PokeTable points={this.state.points} />
-          }
-        </div>
+      <div className="container">
+        <h1>Results for id: {this.props.params.friendly_id}
+            {this.state.points && this.state.points.length > 0 && (" - " + this.state.points[0].friendly_name) }
+        </h1>
+        {
+          this.state.loading
+          ?
+          <Loading />
+          :
+          <PokeTable points={this.state.points} />
+        }
       </div>
     )
   }

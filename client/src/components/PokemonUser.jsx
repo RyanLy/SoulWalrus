@@ -15,8 +15,7 @@ class PokemonUser extends React.Component {
   }
   
   componentDidMount() {
-    Notification.requestPermission()
-    self = this;
+    let self = this;
     request
     .get(`/v1/point/${this.props.params.user_name}`)
     .end(function(err, res){
@@ -41,17 +40,15 @@ class PokemonUser extends React.Component {
       borderRadius: '50%'
     }
     return (
-      <div>
-        <div className="container">
-          <h1> {this.props.params.user_name + "'s - "} Pokemon </h1>
-          {
-            this.state.loading
-            ?
-            <Loading />
-            :
-            <PokeTable points={this.state.points} />
-          }
-        </div>
+      <div className="container">
+        <h1> {this.props.params.user_name + "'s - "} Pokemon </h1>
+        {
+          this.state.loading
+          ?
+          <Loading />
+          :
+          <PokeTable points={this.state.points} />
+        }
       </div>
     )
   }

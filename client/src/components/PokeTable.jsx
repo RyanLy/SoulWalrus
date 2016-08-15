@@ -28,7 +28,7 @@ class PokeTable extends React.Component {
   }
   
   render() {
-    var self = this;
+    let self = this;
     const style = {
       height: 100,
       width: 100,
@@ -48,7 +48,7 @@ class PokeTable extends React.Component {
           displaySelectAll={false}
           adjustForCheckbox={false}>
           <TableRow>
-            <TableHeaderColumn  className='table-row-image'>Pokemon</TableHeaderColumn>
+            <TableHeaderColumn className='table-row-image'>Pokemon</TableHeaderColumn>
             <TableHeaderColumn>Appeared At</TableHeaderColumn>
             <TableHeaderColumn>Captured By</TableHeaderColumn>
             <TableHeaderColumn>Captured At</TableHeaderColumn>

@@ -2,8 +2,13 @@ import React from 'react'
 import request from 'superagent'
 import Pusher from 'pusher-js';
 
+import {Tabs, Tab} from 'material-ui/Tabs';
+
 import PokeTable from './PokeTable.jsx';
 import Loading from './Loading.jsx';
+import Leaderboard from './Leaderboard.jsx';
+import Error from './Error.jsx';
+
 
 let pusher = new Pusher(ENVIRONMENT.PUSHER_APP_ID, {
   encrypted: true
@@ -17,20 +22,29 @@ class Pokemon extends React.Component {
     super(props);
     this.state = {
       loading: true,
-      open: false
+      points: [],
+      leaderboard: {},
     };
   }
   
   componentDidMount() {
     Notification.requestPermission()
     
-    self = this;
+    let self = this;
     request
     .get('/v1/point/most-recent')
     .end(function(err, res){
       self.setState({
         points: res.body.result,
-        loading: false
+        loading: false,
+      });
+    });
+
+    request
+    .get('/v1/point/leaderboard')
+    .end(function(err, res){
+      self.setState({
+        leaderboard: res.body.result,
       });
     });
 
@@ -38,9 +52,9 @@ class Pokemon extends React.Component {
       request
       .get('/v1/point/most-recent')
       .end(function(err, res){
+        console.log(res);
         self.setState({
           points: res.body.result,
-          open: true
         });
       });
     })
@@ -51,7 +65,6 @@ class Pokemon extends React.Component {
       .end(function(err, res){
         self.setState({
           points: res.body.result,
-          open: true
         });
       });
     })
@@ -59,23 +72,28 @@ class Pokemon extends React.Component {
   
   componentWillUnmount() {
     channelPoint.unbind('point_created');
+    channelPoint.unbind('point_updated');
   }
 
   render() {
-
     return (
-      <div>
-        <div className="container">
-          <h1> Recent 5 Pokemon ... </h1>
-          
-          {
-            this.state.loading
-            ?
-            <Loading />
-            :
-            <PokeTable points={this.state.points} />
-          }
-        </div>
+      <div className="container">
+        <h1> Recent 5 Pokemon and Leaderboards</h1>
+        <hr/>
+        <Tabs>
+          <Tab label="Recent">
+            {
+             this.state.loading
+             ?
+             <Loading />
+             :
+             <PokeTable points={this.state.points} />
+            }
+          </Tab>
+          <Tab label="Leaderboards">
+            <Leaderboard leaderboard={this.state.leaderboard}/>
+          </Tab>
+        </Tabs>
       </div>
     )
   }

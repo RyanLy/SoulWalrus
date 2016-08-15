@@ -12,6 +12,11 @@ import TextField from 'material-ui/TextField';
 
 import Loading from './Loading.jsx';
 
+let pusher = new Pusher(ENVIRONMENT.PUSHER_APP_ID, {
+  encrypted: true
+});
+
+let channelMotd = pusher.subscribe('motd');
 
 class Main extends React.Component {
 
@@ -35,26 +40,26 @@ class Main extends React.Component {
   }
   
   componentDidMount() {
-    self = this;
+    let self = this;
     request
     .get('/v1/motd')
     .end(function(err, res){
-      self.setState({
-        motd: res.body.result.message
-      });
+      if (res) {
+        self.setState({
+          motd: res.body.result.message
+        });
+      }
     });
-    
-    let pusher = new Pusher(ENVIRONMENT.PUSHER_APP_ID, {
-      encrypted: true
-    });
-    
-    let channelMotd = pusher.subscribe('motd');
-    
+
     channelMotd.bind('motd_update', function(data) {
       self.setState({
         motd: data.result.message
       });
     });
+  }
+  
+  componentWillUnmount() {
+    channelMotd.unbind('motd_update');
   }
   
   renderMotd() {
@@ -69,7 +74,7 @@ class Main extends React.Component {
   }
   
   render() {
-    self = this;
+    let self = this;
     const actions = [
       <FlatButton
         label="Cancel"
