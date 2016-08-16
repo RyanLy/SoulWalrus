@@ -18,6 +18,7 @@ module Api::V1
         if result[user_name].nil?
           result[user_name] = {}
           result[user_name]['points'] = 0
+          result[user_name]['poke_value'] = 0
         end
 
         if result[user_name]['best_pokemon'].nil? or point['friendly_id'].to_i > result[user_name]['best_pokemon']['friendly_id'].to_i
@@ -25,6 +26,7 @@ module Api::V1
         end
         
         result[user_name]['points'] += 1
+        result[user_name]['poke_value'] += point['friendly_id'].to_i
       end
       render_and_log_to_db(json: {result: result}, status: 200)
     end

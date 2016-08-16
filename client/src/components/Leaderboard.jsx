@@ -38,6 +38,20 @@ class Leaderboard extends React.Component {
       width: 100,
       borderRadius: '50%'
     }
+    
+    let result = []
+    for(let key in this.props.leaderboard) {
+      let obj = this.props.leaderboard[key]
+      obj.key = key
+      result.push(obj)
+    }
+    
+    result = result.sort(
+      function(a, b) {
+        return b.poke_value - a.poke_value
+      }
+    )
+
     return (
       <Table>
         <TableHeader
@@ -46,23 +60,27 @@ class Leaderboard extends React.Component {
           <TableRow>
             <TableHeaderColumn>User</TableHeaderColumn>
             <TableHeaderColumn>Pokemon caught</TableHeaderColumn>
+            <TableHeaderColumn>Poke Value</TableHeaderColumn>
             <TableHeaderColumn className='hidden-xs'>Rarest Pokemon</TableHeaderColumn>
           </TableRow>
         </TableHeader>
         <TableBody displayRowCheckbox={false}>
           {
-            Object.keys(this.props.leaderboard).sort().map(function(key) {
+            result.map(function(obj) {
               return (
-                <TableRow key={key}>
-                  <TableRowColumn>{self.renderUserNameLink(key)}</TableRowColumn>
+                <TableRow key={obj.key}>
+                  <TableRowColumn>{self.renderUserNameLink(obj.key)}</TableRowColumn>
                   <TableRowColumn>
-                    {self.props.leaderboard[key].points}
+                    {obj.points}
+                  </TableRowColumn>
+                  <TableRowColumn>
+                    {obj.poke_value}
                   </TableRowColumn>
                   <TableRowColumn className='hidden-xs'>
-                    <Link to={'/pokemon-id/' + self.props.leaderboard[key].best_pokemon.friendly_id} className="router-link--underline--false">
+                    <Link to={'/pokemon-id/' + obj.best_pokemon.friendly_id} className="router-link--underline--false">
                       <Paper style={style} zDepth={2} circle={true} children={  
                         <img style={img_style}
-                             src={`https://s3-eu-west-1.amazonaws.com/calpaterson-pokemon/${self.props.leaderboard[key].best_pokemon.friendly_id}.jpeg`} />} 
+                             src={`https://s3-eu-west-1.amazonaws.com/calpaterson-pokemon/${obj.best_pokemon.friendly_id}.jpeg`} />} 
                       />
                     </Link>
                   </TableRowColumn>
