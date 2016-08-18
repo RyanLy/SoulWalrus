@@ -40,19 +40,18 @@ class Main extends React.Component {
   }
   
   componentDidMount() {
-    let self = this;
     request
     .get('/v1/motd')
-    .end(function(err, res){
+    .end((err, res) => {
       if (res) {
-        self.setState({
+        this.setState({
           motd: res.body.result.message
         });
       }
     });
 
-    channelMotd.bind('motd_update', function(data) {
-      self.setState({
+    channelMotd.bind('motd_update', (data) => {
+      this.setState({
         motd: data.result.message
       });
     });
@@ -74,7 +73,6 @@ class Main extends React.Component {
   }
   
   render() {
-    let self = this;
     const actions = [
       <FlatButton
         label="Cancel"
@@ -89,14 +87,14 @@ class Main extends React.Component {
           () => {
             request
             .patch('/v1/motd')
-            .send({submitted_by: 'web_client', message: self.state.textFieldValue})
-            .end(function(err, res){
+            .send({submitted_by: 'web_client', message: this.state.textFieldValue})
+            .end((err, res) => {
               if (res) {
-                self.setState({
+                this.setState({
                   motd: res.body.result.message
                 });
-                self.handleClose();
-                self.setState({textFieldValue: ''})
+                this.handleClose();
+                this.setState({textFieldValue: ''})
               }
             });
           }

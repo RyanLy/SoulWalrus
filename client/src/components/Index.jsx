@@ -44,12 +44,11 @@ class Index extends React.Component {
   render() {
     return (
       <div>
-        <AppBar style={{top: 0, position: 'fixed'}} title="SoulWalrus" onTitleTouchTap={() => browserHistory.push('/')} titleStyle={ {cursor: 'pointer'} } onLeftIconButtonTouchTap={this.handleToggle.bind(this)} />
-        <Drawer docked={false} overlayStyle={ { opacity: 0 }} containerStyle={{
-            height: 'calc(100% - 64px)',
-            top: '64px',
-            bottom: 0
-          }} open={this.state.open} onRequestChange={(open) => this.setState({open})}>
+        <AppBar style={{top: 0, position: 'fixed'}}
+                title={<span style={ {cursor: 'pointer'}}
+                onClick={() => browserHistory.push('/')}>SoulWalrus</span>}
+                onLeftIconButtonTouchTap={this.handleToggle.bind(this)} />
+        <Drawer docked={false} overlayClassName='drawer__overlay' containerClassName='drawer__container' open={this.state.open} onRequestChange={(open) => this.setState({open})}>
           <Link to="/" className="router-link--underline--false">
             <MenuItem primaryText="Index"
                       onTouchTap={this.handleClose.bind(this)}

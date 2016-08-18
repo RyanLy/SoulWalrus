@@ -26,7 +26,6 @@ class Leaderboard extends React.Component {
   }
   
   render() {
-    let self = this;
     const style = {
       height: 100,
       width: 100,
@@ -67,10 +66,10 @@ class Leaderboard extends React.Component {
         </TableHeader>
         <TableBody displayRowCheckbox={false}>
           {
-            result.map(function(obj) {
+            result.map((obj) => {
               return (
                 <TableRow key={obj.key}>
-                  <TableRowColumn>{self.renderUserNameLink(obj.key)}</TableRowColumn>
+                  <TableRowColumn>{this.renderUserNameLink(obj.key)}</TableRowColumn>
                   <TableRowColumn>{obj.points}</TableRowColumn>
                   <TableRowColumn>{obj.poke_value}</TableRowColumn>
                   <TableRowColumn className='hidden-xs'><PokeImage point={obj.best_pokemon} /></TableRowColumn>

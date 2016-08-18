@@ -31,11 +31,10 @@ class Pokemon extends React.Component {
   componentDidMount() {
     Notification.requestPermission()
     
-    let self = this;
     request
     .get('/v1/point/most-recent')
-    .end(function(err, res){
-      self.setState({
+    .end((err, res) => {
+      this.setState({
         points: res.body.result,
         loading_most_recent: false,
       });
@@ -43,8 +42,8 @@ class Pokemon extends React.Component {
 
     request
     .get('/v1/point/leaderboard')
-    .end(function(err, res){
-      self.setState({
+    .end((err, res) => {
+      this.setState({
         leaderboard: res.body.result,
         loading_leaderboard: false,
       });
@@ -53,9 +52,8 @@ class Pokemon extends React.Component {
     channelPoint.bind('point_created', function(data) {
       request
       .get('/v1/point/most-recent')
-      .end(function(err, res){
-        console.log(res);
-        self.setState({
+      .end((err, res) => {
+        this.setState({
           points: res.body.result,
         });
       });
@@ -64,8 +62,8 @@ class Pokemon extends React.Component {
     channelPoint.bind('point_updated', function(data) {
       request
       .get('/v1/point/most-recent')
-      .end(function(err, res){
-        self.setState({
+      .end((err, res) => {
+        this.setState({
           points: res.body.result,
         });
       });
@@ -80,7 +78,7 @@ class Pokemon extends React.Component {
   render() {
     return (
       <div className="container">
-        <h1> Recent 5 Pokemon and Leaderboards</h1>
+        <h1>Recent 5 Pokemon and Leaderboards</h1>
         <hr/>
         <Tabs>
           <Tab icon={<FontIcon className="material-icons">replay_5</FontIcon>} label="Recent">

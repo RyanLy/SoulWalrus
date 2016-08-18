@@ -8,7 +8,6 @@ class Loading extends React.Component {
   }
   
   render() {
-    
     let refresh =  {
       display: 'inline-block',
       position: 'relative',

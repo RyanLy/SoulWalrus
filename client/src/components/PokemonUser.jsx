@@ -15,11 +15,10 @@ class PokemonUser extends React.Component {
   }
   
   componentDidMount() {
-    let self = this;
     request
     .get(`/v1/point/${this.props.params.user_name}`)
-    .end(function(err, res){
-      self.setState({
+    .end((err, res) =>{
+      this.setState({
         points: res.body.result,
         loading: false
       });

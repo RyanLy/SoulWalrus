@@ -14,11 +14,10 @@ class PokemonId extends React.Component {
   }
   
   componentDidMount() {
-    let self = this;
     request
     .get(`/v1/point-id/${this.props.params.friendly_id}`)
-    .end(function(err, res){
-      self.setState({
+    .end((err, res) => {
+      this.setState({
         points: res.body.result,
         loading: false
       });

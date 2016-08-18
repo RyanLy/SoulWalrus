@@ -28,9 +28,6 @@ class PokeTable extends React.Component {
   }
   
   render() {
-    let self = this;
-
-    
     return (
       <Table>
         <TableHeader
@@ -45,12 +42,12 @@ class PokeTable extends React.Component {
         </TableHeader>
         <TableBody displayRowCheckbox={false}>
           {
-            this.props.points.map(function(point) {
+            this.props.points.map((point) => {
               return (
                 <TableRow key={point.id}>
                   <TableRowColumn className='table-row-image'><PokeImage point={point} /></TableRowColumn>
                   <TableRowColumn className='hidden-xs'>{moment(point.create_date).format('LLLL')}</TableRowColumn>
-                  <TableRowColumn>{self.renderUserNameLink(point.user_name)}</TableRowColumn>
+                  <TableRowColumn>{this.renderUserNameLink(point.user_name)}</TableRowColumn>
                   <TableRowColumn className='hidden-xs'>{ (point.capture_date && moment(point.capture_date).format('LLLL')) || 'Uncaptured'}</TableRowColumn>
                 </TableRow>
               )
