@@ -1,5 +1,7 @@
 module Api::V1
   class PointController < ApiController
+    
+    @@point_update_mutex = Mutex.new
 
     def index
       all_users = Point.all.collect { |x| x['user_name'] || 'Not Claimed' }.sort
@@ -42,7 +44,7 @@ module Api::V1
     
     def get_user
       points = Point.where(user_name: allowed_params['user_name']).all.sort do |a, b|
-        b.create_date.to_i <=> a.create_date.to_i
+        b.capture_date.to_i <=> a.capture_date.to_i
       end
       
       if points
@@ -87,7 +89,6 @@ module Api::V1
       
       if allowed_params['point_secret'] == ENV['POINT_SECRET']
         point = Point.find_by_id(allowed_params['point_id'])
-        # TODO: Fix race condition
         if !point
           render_and_log_to_db(json: {error: 'Invalid point id. Nice try...'}, status: 400)
         elsif point.user.nil?
@@ -95,16 +96,17 @@ module Api::V1
           point.user_name = allowed_params['user']['name']
           point.user_id = allowed_params['user']['id']
           point.capture_date = DateTime.now
-          if Point.find_by_id(allowed_params['point_id']).user.nil?
-            point.save
-            Pusher.trigger('point', 'point_updated', {
-              result: point
-            })
-            render_and_log_to_db(json: {result: point}, status: 200)
-          else
-            render_and_log_to_db(json: {error: "This point has already been taken by #{point['user']['name']}."}, status: 400)
+          @@point_update_mutex.synchronize do
+            if Point.find_by_id(allowed_params['point_id']).user.nil?
+              point.save
+              Pusher.trigger('point', 'point_updated', {
+                result: point
+              })
+              render_and_log_to_db(json: {result: point}, status: 200)
+            else
+              render_and_log_to_db(json: {error: "This point has already been taken by #{point['user']['name']}."}, status: 400)
+            end
           end
-
         else
           render_and_log_to_db(json: {error: "This point has already been taken by #{point['user']['name']}."}, status: 400)
         end
