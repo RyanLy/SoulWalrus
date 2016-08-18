@@ -52,14 +52,14 @@ class Leaderboard extends React.Component {
         return b.poke_value - a.poke_value
       }
     )
-
+    
     return (
       <Table>
         <TableHeader
           displaySelectAll={false}
           adjustForCheckbox={false}>
           <TableRow>
-            <TableHeaderColumn>Users</TableHeaderColumn>
+            <TableHeaderColumn>User</TableHeaderColumn>
             <TableHeaderColumn>Pokemon caught</TableHeaderColumn>
             <TableHeaderColumn>Poke Value</TableHeaderColumn>
             <TableHeaderColumn className='hidden-xs'>Rarest Pokemon</TableHeaderColumn>

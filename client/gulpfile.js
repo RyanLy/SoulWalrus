@@ -1,13 +1,9 @@
 var gulp = require('gulp');
-var concat = require('gulp-concat');
-var uglify = require('gulp-uglify');
-var sourcemaps = require('gulp-sourcemaps');
 var gutil = require("gulp-util");
 var webpack = require("webpack");
 var WebpackDevServer = require("webpack-dev-server");
 var webpackConfig = require("./webpack.config.js");
 var stream = require('webpack-stream');
-var sass = require('gulp-sass');
 
 if (process.env.NODE_ENV === 'production') {
   environment = require("./config/production");
@@ -22,21 +18,9 @@ var path = {
   DEST_BUILD: 'dist/build',
 };
 
-gulp.task('styles', [], function () {
-  gulp.src('styles/**/*.sass')
-    .pipe(sass())
-    // .pipe(gulp.dest('./tmp'))
-    .pipe(concat('build.min.css'))
-    // .pipe(autoprefixer())
-    .pipe(gulp.dest(path.DEST_BUILD));
-});
-
 gulp.task('webpack', [], function() {
   return gulp.src(path.ALL) // gulp looks for all source files under specified path
-             .pipe(sourcemaps.init()) // creates a source map which would be very helpful for debugging by maintaining the actual source code structure
              .pipe(stream(webpackConfig)) // blend in the webpack config into the source files
-             .pipe(uglify()) // minifies the code for better compression
-             .pipe(sourcemaps.write())
              .pipe(gulp.dest(path.DEST_BUILD))
 });
 
@@ -76,11 +60,6 @@ gulp.task("webpack-dev-server", function(callback) {
   });
 });
 
-gulp.task('watch', function() {
-  // gulp.watch(path.ALL, ['webpack']);
-  gulp.watch(path.CSS, ['styles']);
-});
+gulp.task('build', ['webpack', 'index']);
 
-gulp.task('build', ['webpack', 'styles', 'index']);
-
-gulp.task('default', ['webpack-dev-server', 'watch']);
+gulp.task('default', ['webpack-dev-server']);

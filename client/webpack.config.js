@@ -25,11 +25,8 @@ var webpackConfig = {
     loaders: [
       {
         test: /.jsx?$/,
-        loader: 'babel-loader',
-        exclude: /node_modules/,
-        query: {
-          presets: ['es2015', 'react']
-        }
+        loaders: ['react-hot', 'babel-loader?presets[]=es2015,presets[]=react'],
+        exclude: /node_modules/
       },
       {
           test: /\.sass$/,
@@ -46,7 +43,7 @@ var webpackConfig = {
        return o;
      }, {})
    }),
-   new ExtractTextPlugin("build.min.css")
+   new ExtractTextPlugin("build.min.css"),
   ]
 };
 
@@ -54,6 +51,14 @@ if (process.env.NODE_ENV !== 'production') {
   webpackConfig.entry.unshift(
     'webpack/hot/dev-server',
     'webpack-dev-server/client?http://localhost:8080/'
+  );
+  webpackConfig.devtool = "eval-source-map"
+}
+else {
+  webpackConfig.plugins.unshift(
+    new webpack.optimize.UglifyJsPlugin({
+      compress: { warnings: false }
+    })
   );
 }
 
