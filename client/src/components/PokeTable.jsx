@@ -5,7 +5,7 @@ import moment from 'moment'
 import {Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn}
   from 'material-ui/Table';
 import TextField from 'material-ui/TextField';
-import Paper from 'material-ui/Paper';
+import PokeImage from './PokeImage.jsx';
 
 class PokeTable extends React.Component {
 
@@ -29,18 +29,7 @@ class PokeTable extends React.Component {
   
   render() {
     let self = this;
-    const style = {
-      height: 100,
-      width: 100,
-      margin: 20,
-      textAlign: 'center',
-      display: 'inline-block',
-    };
-    const img_style = {
-      height: 100,
-      width: 100,
-      borderRadius: '50%'
-    }
+
     
     return (
       <Table>
@@ -59,13 +48,7 @@ class PokeTable extends React.Component {
             this.props.points.map(function(point) {
               return (
                 <TableRow key={point.id}>
-                  <TableRowColumn className='table-row-image'>
-                    <Link to={'/pokemon-id/' + point.friendly_id} className="router-link--underline--false">
-                      <Paper style={style} zDepth={2} circle={true} children={  
-                        <img style={img_style} src={'https://s3-eu-west-1.amazonaws.com/calpaterson-pokemon/' + point.friendly_id + '.jpeg'} />} 
-                      />
-                    </Link>
-                  </TableRowColumn>
+                  <TableRowColumn className='table-row-image'><PokeImage point={point} /></TableRowColumn>
                   <TableRowColumn className='hidden-xs'>{moment(point.create_date).format('LLLL')}</TableRowColumn>
                   <TableRowColumn>{self.renderUserNameLink(point.user_name)}</TableRowColumn>
                   <TableRowColumn className='hidden-xs'>{ (point.capture_date && moment(point.capture_date).format('LLLL')) || 'Uncaptured'}</TableRowColumn>

@@ -9,6 +9,7 @@ import Main from './components/Main.jsx'
 import Error from './components/Error.jsx'
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import injectTapEventPlugin from 'react-tap-event-plugin';
+require('./../styles/app.sass');
 
 // Needed for onTouchTap
 // http://stackoverflow.com/a/34015469/988941

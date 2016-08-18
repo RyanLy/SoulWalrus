@@ -6,6 +6,7 @@ import {Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColu
   from 'material-ui/Table';
 import TextField from 'material-ui/TextField';
 import Paper from 'material-ui/Paper';
+import PokeImage from './PokeImage.jsx';
 
 class Leaderboard extends React.Component {
 
@@ -58,7 +59,7 @@ class Leaderboard extends React.Component {
           displaySelectAll={false}
           adjustForCheckbox={false}>
           <TableRow>
-            <TableHeaderColumn>User</TableHeaderColumn>
+            <TableHeaderColumn>Users</TableHeaderColumn>
             <TableHeaderColumn>Pokemon caught</TableHeaderColumn>
             <TableHeaderColumn>Poke Value</TableHeaderColumn>
             <TableHeaderColumn className='hidden-xs'>Rarest Pokemon</TableHeaderColumn>
@@ -70,20 +71,9 @@ class Leaderboard extends React.Component {
               return (
                 <TableRow key={obj.key}>
                   <TableRowColumn>{self.renderUserNameLink(obj.key)}</TableRowColumn>
-                  <TableRowColumn>
-                    {obj.points}
-                  </TableRowColumn>
-                  <TableRowColumn>
-                    {obj.poke_value}
-                  </TableRowColumn>
-                  <TableRowColumn className='hidden-xs'>
-                    <Link to={'/pokemon-id/' + obj.best_pokemon.friendly_id} className="router-link--underline--false">
-                      <Paper style={style} zDepth={2} circle={true} children={  
-                        <img style={img_style}
-                             src={`https://s3-eu-west-1.amazonaws.com/calpaterson-pokemon/${obj.best_pokemon.friendly_id}.jpeg`} />} 
-                      />
-                    </Link>
-                  </TableRowColumn>
+                  <TableRowColumn>{obj.points}</TableRowColumn>
+                  <TableRowColumn>{obj.poke_value}</TableRowColumn>
+                  <TableRowColumn className='hidden-xs'><PokeImage point={obj.best_pokemon} /></TableRowColumn>
                 </TableRow>
               )
             })

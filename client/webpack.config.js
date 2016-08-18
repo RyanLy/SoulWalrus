@@ -51,10 +51,10 @@ var webpackConfig = {
 };
 
 if (process.env.NODE_ENV !== 'production') {
-  webpackConfig.entry.concat([
+  webpackConfig.entry.unshift(
     'webpack/hot/dev-server',
     'webpack-dev-server/client?http://localhost:8080/'
-  ]);
+  );
 }
 
 module.exports = webpackConfig
