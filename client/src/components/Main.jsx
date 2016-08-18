@@ -1,6 +1,5 @@
 import React from 'react'
 import request from 'superagent'
-import { Link } from 'react-router'
 import Pusher from 'pusher-js';
 
 import RefreshIndicator from 'material-ui/RefreshIndicator';

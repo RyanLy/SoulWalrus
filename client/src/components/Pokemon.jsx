@@ -78,28 +78,31 @@ class Pokemon extends React.Component {
   render() {
     return (
       <div className="container">
-        <h1>Recent 5 Pokemon and Leaderboards</h1>
-        <hr/>
-        <Tabs>
-          <Tab icon={<FontIcon className="material-icons">replay_5</FontIcon>} label="Recent">
-            {
-              this.state.loading_most_recent
-              ?
-              <Loading />
-              :
-              <PokeTable points={this.state.points} />
-            }
-          </Tab>
-          <Tab icon={<FontIcon className="material-icons">star</FontIcon>} label="Leaderboards">
-            {
-              this.state.loading_leaderboard
-              ?
-              <Loading />
-              :
-              <Leaderboard leaderboard={this.state.leaderboard}/>
-            }
-          </Tab>
-        </Tabs>
+        <div className="row">
+          <h1>Recent 5 Pokemon and Leaderboards</h1>
+        </div>
+        <div className="row margin-top-15px">
+          <Tabs>
+            <Tab icon={<FontIcon className="material-icons">replay_5</FontIcon>} label="Recent">
+              {
+                this.state.loading_most_recent
+                ?
+                <Loading />
+                :
+                <PokeTable points={this.state.points} />
+              }
+            </Tab>
+            <Tab icon={<FontIcon className="material-icons">star</FontIcon>} label="Leaderboards">
+              {
+                this.state.loading_leaderboard
+                ?
+                <Loading />
+                :
+                <Leaderboard leaderboard={this.state.leaderboard}/>
+              }
+            </Tab>
+          </Tabs>
+        </div>
       </div>
     )
   }
