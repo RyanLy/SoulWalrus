@@ -28,7 +28,8 @@ class PokeImage extends React.Component {
       <div>
         <Link to={'/pokemon-id/' + this.props.point.friendly_id} className="router-link--underline--false">
           <Paper data-tip={`${this.props.point.friendly_name} (${this.props.point.friendly_id})`} style={style} zDepth={2} circle={true} children={  
-            <img style={img_style} src={'https://s3-eu-west-1.amazonaws.com/calpaterson-pokemon/' + this.props.point.friendly_id + '.jpeg'} />} 
+            <img style={img_style}
+                 src={`http://pokeunlock.com/wp-content/uploads/2015/03/${('000' + this.props.point.friendly_id).substr(-3)}.png`} />} 
           />
         </Link>
         <ReactTooltip />
