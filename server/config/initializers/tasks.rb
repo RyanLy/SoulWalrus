@@ -18,3 +18,36 @@ scheduler.every '30s' do
     Api::V1::PointController.create_points
   end
 end
+
+scheduler.cron '00 06 * * *' do
+  Pusher.trigger('poke_shuffle', 'tourney_reminder', {
+    result: "1 hour until tourney is over."
+  })
+end
+
+scheduler.cron '00 07 * * *' do
+  Api::V1::PokeShuffleController.end_tourney
+  Api::V1::PokeShuffleController.start_tourney
+end
+
+scheduler.cron '00 14 * * *' do
+  Pusher.trigger('poke_shuffle', 'tourney_reminder', {
+    result: "1 hour until tourney is over."
+  })
+end
+
+scheduler.cron '00 15 * * *' do
+  Api::V1::PokeShuffleController.end_tourney
+  Api::V1::PokeShuffleController.start_tourney
+end
+
+scheduler.cron '00 22 * * *' do
+  Pusher.trigger('poke_shuffle', 'tourney_reminder', {
+    result: "1 hour until tourney is over."
+  })
+end
+
+scheduler.cron '00 23 * * *' do
+  Api::V1::PokeShuffleController.end_tourney
+  Api::V1::PokeShuffleController.start_tourney
+end

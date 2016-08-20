@@ -6,7 +6,7 @@ module Api::V1
     def index
       all_users = Point.all.collect { |x| x['user_name'] || 'Not Claimed' }.sort
       result = {}
-      all_users.each do |user|
+      all_users.reject{ |u| u['user_name'] == '_prize' }.each do |user|
         result[user] = 0 if result[user].nil?
         result[user] += 1
       end
@@ -15,7 +15,7 @@ module Api::V1
     
     def leaderboard
       result = {}
-      Point.all.each do |point|
+      Point.all.reject{ |u| u['user_name'] == '_prize' }.each do |point|
         user_name = point['user_name'] || 'Not Claimed'
         if result[user_name].nil?
           result[user_name] = {}
@@ -35,7 +35,7 @@ module Api::V1
     
     
     def get_most_recent
-      points = Point.all.sort do |a, b|
+      points = Point.all.reject{ |u| u['user_name'] == '_prize' }.sort do |a, b|
         b.create_date.to_i <=> a.create_date.to_i
       end
 
@@ -55,10 +55,11 @@ module Api::V1
     end
     
     def get_pokemon
-      points = Point.where(friendly_id: params['friendly_id']).all.sort do |a, b|
-        b.create_date.to_i <=> a.create_date.to_i
-      end
-      
+      points = Point.where(friendly_id: params['friendly_id']).all
+                    .reject{ |u| u['user_name'] == '_prize' }.sort do |a, b|
+                      b.create_date.to_i <=> a.create_date.to_i
+                    end
+                    
       if points
         render_and_log_to_db(json: {result: points}, status: 200)
       else
@@ -79,6 +80,8 @@ module Api::V1
         )
         point.save
         render_and_log_to_db(json: {result: point}, status: 200)
+      else
+        render_and_log_to_db(json: {error: "Please enter a valid secret."}, status: 400)
       end
     end
     
@@ -106,6 +109,8 @@ module Api::V1
             render_and_log_to_db(json: {error: "This #{point['friendly_name']} has already been captured by #{point['user']['name']}."}, status: 400)
           end
         end
+      else
+        render_and_log_to_db(json: {error: "Please enter a valid secret."}, status: 400)
       end
     end
     
@@ -113,8 +118,7 @@ module Api::V1
       c = 2*Random.rand(151*(151+1)/2)
       n = 152 - ((1 + Math.sqrt(1**2 + 4*c))/2).to_int
       
-      p "Spin to win: #{n}"
-      point = Point.new(
+      point = Point.create(
         user: nil,
         user_name: nil,
         user_id: nil,
@@ -123,7 +127,6 @@ module Api::V1
         friendly_id: n,
         friendly_name: Pokemon.pokemon_info[n-1][:name].capitalize
       )
-      point.save
       Pusher.trigger('point', 'point_created', {
         result: point
       })

@@ -35,6 +35,11 @@ Rails.application.routes.draw do
       
       match 'point/:user_name' => 'point#get_user', :via => :get
       match 'point-id/:friendly_id' => 'point#get_pokemon', :via => :get
+      
+      match 'poke-shuffle' => 'poke_shuffle#index', :via => :get
+      match 'poke-shuffle' => 'poke_shuffle#create', :via => :post
+      match 'poke-shuffle/prize' => 'poke_shuffle#create_prize', :via => :post
+      match 'poke-shuffle' => 'poke_shuffle#delete', :via => :delete
     end
   end
 
