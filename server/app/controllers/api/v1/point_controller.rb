@@ -103,7 +103,7 @@ module Api::V1
             })
             render_and_log_to_db(json: {result: point}, status: 200)
           else
-            render_and_log_to_db(json: {error: "This pokemon has already been captured by #{point['user']['name']}."}, status: 400)
+            render_and_log_to_db(json: {error: "This #{point['friendly_name']} has already been captured by #{point['user']['name']}."}, status: 400)
           end
         end
       end
