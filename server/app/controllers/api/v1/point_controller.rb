@@ -88,27 +88,23 @@ module Api::V1
       render_and_log_to_db(json: {error: 'Please specify an point_id'}, status: 400) unless allowed_params['point_id']
       
       if allowed_params['point_secret'] == ENV['POINT_SECRET']
-        point = Point.find_by_id(allowed_params['point_id'])
-        if !point
-          render_and_log_to_db(json: {error: 'Invalid point id. Nice try...'}, status: 400)
-        elsif point.user.nil?
-          point.user = allowed_params['user']
-          point.user_name = allowed_params['user']['name']
-          point.user_id = allowed_params['user']['id']
-          point.capture_date = DateTime.now
-          @@point_update_mutex.synchronize do
-            if Point.find_by_id(allowed_params['point_id']).user.nil?
-              point.save
-              Pusher.trigger('point', 'point_updated', {
-                result: point
-              })
-              render_and_log_to_db(json: {result: point}, status: 200)
-            else
-              render_and_log_to_db(json: {error: "This pokemon has already been captured by #{point['user']['name']}."}, status: 400)
-            end
+        @@point_update_mutex.synchronize do
+          point = Point.find_by_id(allowed_params['point_id'])
+          if !point
+            render_and_log_to_db(json: {error: 'Invalid point id. Nice try...'}, status: 400)
+          elsif point.user.nil?
+            point.user = allowed_params['user']
+            point.user_name = allowed_params['user']['name']
+            point.user_id = allowed_params['user']['id']
+            point.capture_date = DateTime.now
+            point.save
+            Pusher.trigger('point', 'point_updated', {
+              result: point
+            })
+            render_and_log_to_db(json: {result: point}, status: 200)
+          else
+            render_and_log_to_db(json: {error: "This pokemon has already been captured by #{point['user']['name']}."}, status: 400)
           end
-        else
-          render_and_log_to_db(json: {error: "This pokemon has already been captured by #{point['user']['name']}."}, status: 400)
         end
       end
     end
