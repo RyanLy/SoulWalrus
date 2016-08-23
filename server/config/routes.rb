@@ -3,9 +3,43 @@ Rails.application.routes.draw do
   # http://andrewberls.com/blog/post/api-versioning-with-rails-4
   scope module: 'api' do
     namespace :v1 do
-      resources 'eight_ball'
-      resources 'streamer'
-      resources 'motd'
+      match 'motd' => 'motd#index', :via => :get
+      match 'motd' => 'motd#update', :via => :patch
+      match 'eight_ball' => 'eight_ball#index', :via => :get
+      match 'streamer' => 'streamer#index', :via => :get
+      match 'streamer' => 'streamer#create', :via => :post
+      match 'streamer' => 'streamer#destroy', :via => :delete
+      match 'streamer/get-live' => 'streamer#getLive', :via => :get
+      match 'skype' => 'skype_subscribe#index', :via => :get
+      match 'skype' => 'skype_subscribe#create', :via => :post
+      match 'skype' => 'skype_subscribe#destroy', :via => :delete
+      match 'skype2' => 'skype_subscribe2#index', :via => :get
+      match 'skype2' => 'skype_subscribe2#create', :via => :post
+      match 'skype2' => 'skype_subscribe2#destroy', :via => :delete
+      match 'hscard/:name' => 'hs_card#index', :via => :get
+      match 'hscard' => 'hs_card#index', :via => :get
+      match 'csgo/bot-train-t' => 'csgo#bot_train_t', :via => :get
+      match 'csgo/bot-train-ct' => 'csgo#bot_train_ct', :via => :get
+      match 'steam/join-game' => 'csgo#join_game', :via => :get
+      match 'music' => 'music#get_recommendation', :via => :get
+      match 'play-song' => 'music#play_song', :via => :get
+      match 'callback' => 'callback#index', :via => :get
+      match 'twilio' => 'twilio_subscribe#index', :via => :get
+      #match 'twilio' => 'twilio_subscribe#create', :via => :post
+      #match 'twilio' => 'twilio_subscribe#destroy', :via => :delete
+      match 'point' => 'point#index', :via => :get
+      match 'point' => 'point#create', :via => :post
+      match 'point' => 'point#update', :via => :put
+      match 'point/leaderboard' => 'point#leaderboard', :via => :get
+      match 'point/most-recent' => 'point#get_most_recent', :via => :get
+      
+      match 'point/:user_name' => 'point#get_user', :via => :get
+      match 'point-id/:friendly_id' => 'point#get_pokemon', :via => :get
+      
+      match 'poke-shuffle' => 'poke_shuffle#index', :via => :get
+      match 'poke-shuffle' => 'poke_shuffle#create', :via => :post
+      match 'poke-shuffle/prize' => 'poke_shuffle#create_prize', :via => :post
+      match 'poke-shuffle' => 'poke_shuffle#delete', :via => :delete
     end
   end
 

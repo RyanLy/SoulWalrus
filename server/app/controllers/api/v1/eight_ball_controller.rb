@@ -1,16 +1,13 @@
 module Api::V1
   class EightBallController < ApiController
-      
-    def index
-      @resp = Aws::DynamoDB::Client.new(
-        region: 'us-east-1'
-      ).scan({
-        table_name: "eight_ball"
-      })
-      
-      @BALL_ANSWERS = @resp.items.collect { |x| x['answer'] }
 
-      render json: {result: @BALL_ANSWERS[rand(@BALL_ANSWERS.length)]}
+    def index
+      @BALL_ANSWERS = Eightball.all
+      if @BALL_ANSWERS.empty?
+        Eightball.loadAnswers
+        @BALL_ANSWERS = Eightball.all
+      end
+      render_and_log_to_db(json: {result: @BALL_ANSWERS[rand(@BALL_ANSWERS.length)]}, status: 200)
      end
   end
 end
