@@ -21,7 +21,13 @@ end
 
 scheduler.cron '00 06 * * *' do
   Pusher.trigger('poke_shuffle', 'tourney_reminder', {
-    result: "1 hour until tourney is over."
+    result: "1 hour until tourney is over. tourney-status to check on current status."
+  })
+end
+
+scheduler.cron '45 06 * * *' do
+  Pusher.trigger('poke_shuffle', 'tourney_reminder', {
+    result: "15 minutes until tourney is over. tourney-status to check on current status."
   })
 end
 
@@ -32,7 +38,13 @@ end
 
 scheduler.cron '00 14 * * *' do
   Pusher.trigger('poke_shuffle', 'tourney_reminder', {
-    result: "1 hour until tourney is over."
+    result: "1 hour until tourney is over.  tourney-status to check on current status."
+  })
+end
+
+scheduler.cron '45 14 * * *' do
+  Pusher.trigger('poke_shuffle', 'tourney_reminder', {
+    result: "15 minutes until tourney is over. tourney-status to check on current status."
   })
 end
 
@@ -43,7 +55,13 @@ end
 
 scheduler.cron '00 22 * * *' do
   Pusher.trigger('poke_shuffle', 'tourney_reminder', {
-    result: "1 hour until tourney is over."
+    result: "1 hour until tourney is over.  tourney-status to check on current status."
+  })
+end
+
+scheduler.cron '45 22 * * *' do
+  Pusher.trigger('poke_shuffle', 'tourney_reminder', {
+    result: "15 minutes until tourney is over. tourney-status to check on current status."
   })
 end
 
