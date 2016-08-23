@@ -106,7 +106,7 @@ module Api::V1
         p "Random: #{random}"
         player_entries.each do |entry|
           current_id = entry.friendly_id.to_i
-          if random >= total && random < current_id
+          if random >= total && random < (total + current_id)
             winner = entry
             break
           end
