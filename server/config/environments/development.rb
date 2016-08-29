@@ -48,6 +48,7 @@ Dynamoid.configure do |config|
     config.warn_on_scan = true # Output a warning to the logger when you perform a scan rather than a query on a table.
     config.read_capacity = 1 # Read capacity for your tables
     config.write_capacity = 1 # Write capacity for your tables
+    config.endpoint = 'http://localhost:8000' # Comment this line if connecting to remote
   end
   
 Pusher.app_id = '202818'

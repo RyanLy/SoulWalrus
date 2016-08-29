@@ -1,13 +1,13 @@
 module Api::V1
   class TwilioSubscribeController < ApiController
 
-    @@TWILIO_CLIENT = Twilio::REST::Client.new
-    @@TWILIO_LOOKUP = Twilio::REST::LookupsClient.new
-
-    def index
-      result = @@TWILIO_CLIENT.outgoing_caller_ids.list.collect { |x| x.phone_number }.sort
-      render_and_log_to_db(json: {result: result}, status: 200)
-    end
+    # @@TWILIO_CLIENT = Twilio::REST::Client.new
+    # @@TWILIO_LOOKUP = Twilio::REST::LookupsClient.new
+    # 
+    # def index
+    #   result = @@TWILIO_CLIENT.outgoing_caller_ids.list.collect { |x| x.phone_number }.sort
+    #   render_and_log_to_db(json: {result: result}, status: 200)
+    # end
 
     # def create
     #   if params['number']
