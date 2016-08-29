@@ -43,7 +43,7 @@ Testing if the server ran properly.
 Note that the pusher.js client/secrets for `development` are hardcoded into the app atm. Feel free to change them.
 
 
-Setting up the client: (Currently very basic implementation)
+Setting up the client (We're on a webpack, ES6, React stack):
 ---
 
 1. Get Nodejs v6+
