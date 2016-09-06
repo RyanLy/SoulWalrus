@@ -6,7 +6,7 @@ module Api::V1
     
     @@TWITCH_STREAM_ENDPOINT = 'https://api.twitch.tv/kraken/streams/'
     @@TWITCH_USERS_ENDPOINT = 'https://api.twitch.tv/kraken/users/'
-    @@TWILIO_CLIENT = Twilio::REST::Client.new
+    #@@TWILIO_CLIENT = Twilio::REST::Client.new
 
     def index
       result = Streamer.all.collect { |x| x['display_name'] }.sort
