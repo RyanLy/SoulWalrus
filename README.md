@@ -19,14 +19,15 @@ OPTIONAL environment variables (Set the key in your environment variables with t
 - `SOUNDCLOUD_CLIENT_ID` (soundcloud) (Note that is is just the client id and not the secret) http://soundcloud.com/you/apps (Create an app)
 - `TWITCH_CLIENT_ID` (twitch) https://www.twitch.tv/kraken/oauth2/clients/new
 
-Setting up the database locally:
+Setting up the database locally (DynamoDB):
 ---
 - Get Java
 - Follow the instructions in this doc
 http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html#DynamoDBLocal.DownloadingAndRunning
 
-Setting up the server (Ruby on Rails):
+Setting up the server (Ruby on Rails API server):
 ---
+In the server folder.
 
 1. Get Ruby + gems + rails http://www.tutorialspoint.com/ruby-on-rails/rails-installation.htm
 or use a nice installer http://railsinstaller.org/en (Ruby 2.2)
@@ -45,6 +46,7 @@ Note that the pusher.js client/secrets for `development` are hardcoded into the 
 
 Setting up the client (We're on a webpack, ES6, React stack):
 ---
+In the client folder.
 
 1. Get Nodejs v6+
 2. `npm install`

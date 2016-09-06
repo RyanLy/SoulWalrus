@@ -12,8 +12,14 @@ require_relative '../../app/models/PokeShuffle'
 # Be sure to restart your server when you modify this file.
 
 Aws.config.update({
-  region: 'us-east-1'
+  region: 'us-east-1',
 })
+
+if Rails.env.development?
+  Aws.config.update({
+    credentials: Aws::Credentials.new('REPLACE_WITH_ACCESS_KEY_ID', 'REPLACE_WITH_SECRET_ACCESS_KEY'),
+  })
+end
 
 # Use ssl certificate bundled with the gem package
 Aws.use_bundled_cert!

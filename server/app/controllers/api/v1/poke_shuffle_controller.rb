@@ -120,7 +120,9 @@ module Api::V1
           entry.user = winner.user
           entry.user_name = winner.user_name
           entry.user_id = winner.user_id
-          entry.create_date = DateTime.now
+          if entry.user_name == '_prize'
+            entry.create_date = DateTime.now
+          end
           entry.capture_date = DateTime.now
           entry.save
         end
