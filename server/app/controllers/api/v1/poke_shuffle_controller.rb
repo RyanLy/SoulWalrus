@@ -14,28 +14,32 @@ module Api::V1
     
     def create
       if allowed_params[:point_secret] == ENV['POINT_SECRET']
-        point = Point.where(user_id: allowed_params[:user]['id'], friendly_name: allowed_params[:friendly_name].capitalize)
-                      .all.first
-        if point.nil?
-          point = Point.where(user_id: allowed_params[:user]['id'], friendly_id: allowed_params[:friendly_name].capitalize)
+        if not allowed_params[:friendly_name].nil?
+          point = Point.where(user_id: allowed_params[:user]['id'], friendly_name: allowed_params[:friendly_name].capitalize)
                         .all.first
-        end
-        
-        if point
-          entered = PokeShuffle.where(user_id: allowed_params[:user]['id']).all.first
-        
-          if entered
-            entered_pokemon = Point.find_by_id(entered.point_id)
-            entered.point_id = point.id
-            entered.save
-            render_and_log_to_db(json: {result: "#{point.user_name}'s #{point.friendly_name}(#{point.friendly_id}) has been entered into the tournament. "\
-                                                "This entry replaces #{entered_pokemon.friendly_name}(#{entered_pokemon.friendly_id})."}, status: 200)
+          if point.nil?
+            point = Point.where(user_id: allowed_params[:user]['id'], friendly_id: allowed_params[:friendly_name].capitalize)
+                          .all.first
+          end
+          
+          if point
+            entered = PokeShuffle.where(user_id: allowed_params[:user]['id']).all.first
+          
+            if entered
+              entered_pokemon = Point.find_by_id(entered.point_id)
+              entered.point_id = point.id
+              entered.save
+              render_and_log_to_db(json: {result: "#{point.user_name}'s #{point.friendly_name}(#{point.friendly_id}) has been entered into the tournament. "\
+                                                  "This entry replaces #{entered_pokemon.friendly_name}(#{entered_pokemon.friendly_id})."}, status: 200)
+            else
+              PokeShuffle.create(
+                user_id: allowed_params[:user]['id'],
+                point_id: point.id
+              )
+              render_and_log_to_db(json: {result: "#{point.user_name}'s #{point.friendly_name}(#{point.friendly_id}) has been entered into the tournament."}, status: 200)
+            end
           else
-            PokeShuffle.create(
-              user_id: allowed_params[:user]['id'],
-              point_id: point.id
-            )
-            render_and_log_to_db(json: {result: "#{point.user_name}'s #{point.friendly_name}(#{point.friendly_id}) has been entered into the tournament."}, status: 200)
+            render_and_log_to_db(json: {error: 'Please choose a valid pokemon to enter with.'}, status: 400)
           end
         else
           render_and_log_to_db(json: {error: 'Please choose a valid pokemon to enter with.'}, status: 400)
@@ -120,7 +124,7 @@ module Api::V1
           entry.user = winner.user
           entry.user_name = winner.user_name
           entry.user_id = winner.user_id
-          if entry.user_name == '_prize'
+          if entry.create_date.nil?
             entry.create_date = DateTime.now
           end
           entry.capture_date = DateTime.now
