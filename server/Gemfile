@@ -32,9 +32,6 @@ gem 'puma'
 # Easier API calling
 gem 'unirest'
 
-# SMS
-gem 'twilio-ruby'
-
 # Use ActiveModel has_secure_password
 # gem 'bcrypt', '~> 3.1.7'
 
