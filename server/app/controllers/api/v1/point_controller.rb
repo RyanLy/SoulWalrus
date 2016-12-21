@@ -15,7 +15,7 @@ module Api::V1
     
     def leaderboard
       result = {}
-      Point.all.reject{ |u| u['user_name'] == '_prize' }.each do |point|
+      Point.eval_limit(10000).batch(100).reject{ |u| u['user_name'] == '_prize' }.each do |point|
         user_name = point['user_name'] || 'Not Claimed'
         if result[user_name].nil?
           result[user_name] = {}
