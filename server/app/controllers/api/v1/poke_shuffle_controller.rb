@@ -71,7 +71,10 @@ module Api::V1
         if PokeShuffle.where(user_id: '_prize').all.first
           render_and_log_to_db(json: {error: "A prize is already created."}, status: 400)
         else
-          c = 2*Random.rand(151*(151+1)/2)
+          c = 22952
+          (0..10).each do |_|
+            c = [c, 2*Random.rand(151*(151+1)/2)].min
+          end
           n = 152 - ((1 + Math.sqrt(1**2 + 4*c))/2).to_int
           
           point = Point.create(
