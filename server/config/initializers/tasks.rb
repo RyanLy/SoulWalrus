@@ -19,53 +19,53 @@ scheduler.every '30s' do
   end
 end
 
-scheduler.cron '00 06 * * *' do
+scheduler.cron '00 23 * * * America/New_York' do
   Pusher.trigger('poke_shuffle', 'tourney_reminder', {
     result: "1 hour until tourney is over. tourney-status to check on current status."
   })
 end
 
-scheduler.cron '45 06 * * *' do
+scheduler.cron '45 23 * * * America/New_York' do
   Pusher.trigger('poke_shuffle', 'tourney_reminder', {
     result: "15 minutes until tourney is over. tourney-status to check on current status."
   })
 end
 
-scheduler.cron '00 07 * * *' do
+scheduler.cron '00 00 * * * America/New_York' do
   Api::V1::PokeShuffleController.end_tourney
   Api::V1::PokeShuffleController.start_tourney
 end
 
-scheduler.cron '00 14 * * *' do
+scheduler.cron '00 07 * * * America/New_York' do
   Pusher.trigger('poke_shuffle', 'tourney_reminder', {
     result: "1 hour until tourney is over.  tourney-status to check on current status."
   })
 end
 
-scheduler.cron '45 14 * * *' do
+scheduler.cron '45 07 * * * America/New_York' do
   Pusher.trigger('poke_shuffle', 'tourney_reminder', {
     result: "15 minutes until tourney is over. tourney-status to check on current status."
   })
 end
 
-scheduler.cron '00 15 * * *' do
+scheduler.cron '00 08 * * * America/New_York' do
   Api::V1::PokeShuffleController.end_tourney
   Api::V1::PokeShuffleController.start_tourney
 end
 
-scheduler.cron '00 22 * * *' do
+scheduler.cron '00 15 * * * America/New_York' do
   Pusher.trigger('poke_shuffle', 'tourney_reminder', {
     result: "1 hour until tourney is over.  tourney-status to check on current status."
   })
 end
 
-scheduler.cron '45 22 * * *' do
+scheduler.cron '45 15 * * * America/New_York' do
   Pusher.trigger('poke_shuffle', 'tourney_reminder', {
     result: "15 minutes until tourney is over. tourney-status to check on current status."
   })
 end
 
-scheduler.cron '00 23 * * *' do
+scheduler.cron '00 16 * * * America/New_York' do
   Api::V1::PokeShuffleController.end_tourney
   Api::V1::PokeShuffleController.start_tourney
 end

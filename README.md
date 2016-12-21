@@ -43,6 +43,7 @@ Testing if the server ran properly.
 
 Note that the pusher.js client/secrets for `development` are hardcoded into the app atm. Feel free to change them.
 
+For ssl issues on windows when installing rubygems: https://gist.github.com/fnichol/867550#the-manual-way-boring
 
 Setting up the client (We're on a webpack, ES6, React stack):
 ---
