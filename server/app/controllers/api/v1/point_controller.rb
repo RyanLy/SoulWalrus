@@ -5,7 +5,7 @@ module Api::V1
 
     def index
       result = {}
-      Point.eval_limit(10000).batch(100).reject{ |u| u['user_name'] == '_prize' }.each do |point|
+      Point.eval_limit(10000).batch(2500).reject{ |u| u['user_name'] == '_prize' }.each do |point|
         user_name = point['user_name'] || 'Not Claimed'
         user_id = point['user_id'] || 'Not Claimed'
         
@@ -22,7 +22,7 @@ module Api::V1
     
     def leaderboard
       result = {}
-      Point.eval_limit(10000).batch(100).reject{ |u| u['user_name'] == '_prize' }.each do |point|
+      Point.eval_limit(10000).batch(2500).reject{ |u| u['user_name'] == '_prize' }.each do |point|
         user_name = point['user_name'] || 'Not Claimed'
         user_id = point['user_id'] || 'Not Claimed'
         
@@ -45,7 +45,7 @@ module Api::V1
     
     
     def get_most_recent
-      points = Point.eval_limit(10000).batch(100).reject{ |u| u['user_name'] == '_prize' }.sort do |a, b|
+      points = Point.eval_limit(10000).batch(2500).reject{ |u| u['user_name'] == '_prize' }.sort do |a, b|
         b.create_date.to_i <=> a.create_date.to_i
       end
 
@@ -53,7 +53,7 @@ module Api::V1
     end
     
     def get_user
-      points = Point.eval_limit(10000).batch(100).where(user_name: allowed_params['user_name']).sort_by do |point|
+      points = Point.eval_limit(10000).batch(2500).where(user_name: allowed_params['user_name']).sort_by do |point|
         [point.friendly_id.to_i, point.capture_date.to_i]
       end.reverse
       
@@ -65,7 +65,7 @@ module Api::V1
     end
     
     def get_pokemon
-      points = Point.eval_limit(10000).batch(100).where(friendly_id: params['friendly_id']).all
+      points = Point.eval_limit(10000).batch(2500).where(friendly_id: params['friendly_id']).all
                     .reject{ |u| u['user_name'] == '_prize' }.sort do |a, b|
                       b.create_date.to_i <=> a.create_date.to_i
                     end

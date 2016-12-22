@@ -18,7 +18,7 @@ module Api::V1
           allowed_user_id = allowed_params[:user]['id']
           allowed_friendly_name = allowed_params[:friendly_name]
 
-          points = Point.eval_limit(10000).batch(1000).all.select { |point| point['user_id'] == allowed_user_id }
+          points = Point.eval_limit(10000).batch(2500).all.select { |point| point['user_id'] == allowed_user_id }
           point = points.select { |point| point['friendly_name'] == allowed_friendly_name.capitalize }.first
           if point.nil?
             point = points.select { |point| point['friendly_id'] == allowed_friendly_name.capitalize }.first
