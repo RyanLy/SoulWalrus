@@ -15,11 +15,13 @@ module Api::V1
     def create
       if allowed_params[:point_secret] == ENV['POINT_SECRET']
         if not allowed_params[:friendly_name].nil?
-          point = Point.where(user_id: allowed_params[:user]['id'], friendly_name: allowed_params[:friendly_name].capitalize)
-                        .all.first
+          allowed_user_id = allowed_params[:user]['id']
+          allowed_friendly_name = allowed_params[:friendly_name]
+
+          points = Point.eval_limit(10000).batch(1000).all.select { |point| point['user_id'] == allowed_user_id }
+          point = points.select { |point| point['friendly_name'] == allowed_friendly_name.capitalize }.first
           if point.nil?
-            point = Point.where(user_id: allowed_params[:user]['id'], friendly_id: allowed_params[:friendly_name].capitalize)
-                          .all.first
+            point = points.select { |point| point['friendly_id'] == allowed_friendly_name.capitalize }.first
           end
           
           if point
@@ -39,7 +41,22 @@ module Api::V1
               render_and_log_to_db(json: {result: "#{point.user_name}'s #{point.friendly_name}(#{point.friendly_id}) has been entered into the tournament."}, status: 200)
             end
           else
-            render_and_log_to_db(json: {error: 'Please choose a valid pokemon to enter with.'}, status: 400)
+            allowed_friendly_name_int = allowed_friendly_name.to_i
+            if allowed_friendly_name_int.to_s === allowed_friendly_name
+              unique_points = points.select do |point|
+                point.friendly_id.to_i > allowed_friendly_name_int - 5 &&
+                point.friendly_id.to_i < allowed_friendly_name_int + 5
+              end
+              .collect { |point| { friendly_name: point['friendly_name'], friendly_id: point['friendly_id']} }
+              .uniq
+              .sort_by { |point| point[:friendly_id].to_i }
+              .map { |point| "#{point[:friendly_name]}(#{point[:friendly_id]})" }
+              .join(', ')
+              
+              render_and_log_to_db(json: {error: "Please choose a valid pokemon to enter with. <br/><b>Suggestions:</b> #{unique_points}"}, status: 400)
+            else
+              render_and_log_to_db(json: {error: 'Please choose a valid pokemon to enter with.'}, status: 400)
+            end
           end
         else
           render_and_log_to_db(json: {error: 'Please choose a valid pokemon to enter with.'}, status: 400)

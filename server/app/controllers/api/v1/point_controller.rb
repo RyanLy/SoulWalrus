@@ -4,38 +4,48 @@ module Api::V1
     @@point_update_mutex = Mutex.new
 
     def index
-      all_users = Point.all.collect { |x| x['user_name'] || 'Not Claimed' }.sort
       result = {}
-      all_users.reject{ |u| u['user_name'] == '_prize' }.each do |user|
-        result[user] = 0 if result[user].nil?
-        result[user] += 1
+      Point.eval_limit(10000).batch(100).reject{ |u| u['user_name'] == '_prize' }.each do |point|
+        user_name = point['user_name'] || 'Not Claimed'
+        user_id = point['user_id'] || 'Not Claimed'
+        
+        if result[user_id].nil?
+          result[user_id] = {}
+          result[user_id]['user_name'] = user_name
+          result[user_id]['points'] = 0
+        end
+        
+        result[user_id]['points'] += 1
       end
-      render_and_log_to_db(json: {result: result}, status: 200)
+      render_and_log_to_db(json: { result: Hash[result.sort_by {|_key, value| value['points'].to_int}.reverse] }, status: 200)
     end
     
     def leaderboard
       result = {}
       Point.eval_limit(10000).batch(100).reject{ |u| u['user_name'] == '_prize' }.each do |point|
         user_name = point['user_name'] || 'Not Claimed'
-        if result[user_name].nil?
-          result[user_name] = {}
-          result[user_name]['points'] = 0
-          result[user_name]['poke_value'] = 0
+        user_id = point['user_id'] || 'Not Claimed'
+        
+        if result[user_id].nil?
+          result[user_id] = {}
+          result[user_id]['user_name'] = user_name
+          result[user_id]['points'] = 0
+          result[user_id]['poke_value'] = 0
         end
 
-        if result[user_name]['best_pokemon'].nil? or point['friendly_id'].to_i > result[user_name]['best_pokemon']['friendly_id'].to_i
-          result[user_name]['best_pokemon'] = point
+        if result[user_id]['best_pokemon'].nil? or point['friendly_id'].to_i > result[user_id]['best_pokemon']['friendly_id'].to_i
+          result[user_id]['best_pokemon'] = point
         end
         
-        result[user_name]['points'] += 1
-        result[user_name]['poke_value'] += point['friendly_id'].to_i
+        result[user_id]['points'] += 1
+        result[user_id]['poke_value'] += point['friendly_id'].to_i
       end
-      render_and_log_to_db(json: {result: result}, status: 200)
+      render_and_log_to_db(json: {result: Hash[result.sort_by {|_key, value| value['poke_value'].to_int}.reverse]}, status: 200)
     end
     
     
     def get_most_recent
-      points = Point.all.reject{ |u| u['user_name'] == '_prize' }.sort do |a, b|
+      points = Point.eval_limit(10000).batch(100).reject{ |u| u['user_name'] == '_prize' }.sort do |a, b|
         b.create_date.to_i <=> a.create_date.to_i
       end
 
@@ -43,19 +53,19 @@ module Api::V1
     end
     
     def get_user
-      points = Point.where(user_name: allowed_params['user_name']).all.sort do |a, b|
-        b.capture_date.to_i <=> a.capture_date.to_i
-      end
+      points = Point.eval_limit(10000).batch(100).where(user_name: allowed_params['user_name']).sort_by do |point|
+        [point.friendly_id.to_i, point.capture_date.to_i]
+      end.reverse
       
       if points
-        render_and_log_to_db(json: {result: points}, status: 200)
+        render_and_log_to_db(json: {result: points[0..100]}, status: 200)
       else
         render_and_log_to_db(json: {error: 'Nothing found.'}, status: 400)
       end
     end
     
     def get_pokemon
-      points = Point.where(friendly_id: params['friendly_id']).all
+      points = Point.eval_limit(10000).batch(100).where(friendly_id: params['friendly_id']).all
                     .reject{ |u| u['user_name'] == '_prize' }.sort do |a, b|
                       b.create_date.to_i <=> a.create_date.to_i
                     end
