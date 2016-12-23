@@ -171,7 +171,10 @@ module Api::V1
       if PokeShuffle.where(user_id: '_prize').all.first
         p "A tourney is already started.."
       else
-        c = 2*Random.rand(151*(151+1)/2)
+        c = 22952
+        (0..10).each do |_|
+          c = [c, 2*Random.rand(151*(151+1)/2)].min
+        end
         n = 152 - ((1 + Math.sqrt(1**2 + 4*c))/2).to_int
         
         point = Point.create(
