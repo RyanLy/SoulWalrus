@@ -82,30 +82,36 @@ module Api::V1
       end
     end
     
+    def self.create_point_and_shuffle
+      c = 22952
+      (0..10).each do |_|
+        c = [c, 2*Random.rand(151*(151+1)/2)].min
+      end
+      n = 152 - ((1 + Math.sqrt(1**2 + 4*c))/2).to_int
+      
+      point = Point.create(
+        user: {name: '_prize', id: '-1'},
+        user_name: '_prize',
+        user_id:  '-1',
+        friendly_id: n,
+        friendly_name: Pokemon.pokemon_info[n-1][:name].capitalize
+      )
+      
+      PokeShuffle.create(
+        user_id: '_prize',
+        point_id: point.id
+      )
+      
+      point
+    end
+    
     def create_prize
       if allowed_params[:point_secret] == ENV['POINT_SECRET']
       
         if PokeShuffle.where(user_id: '_prize').all.first
           render_and_log_to_db(json: {error: "A prize is already created."}, status: 400)
         else
-          c = 22952
-          (0..10).each do |_|
-            c = [c, 2*Random.rand(151*(151+1)/2)].min
-          end
-          n = 152 - ((1 + Math.sqrt(1**2 + 4*c))/2).to_int
-          
-          point = Point.create(
-            user: {name: '_prize', id: '-1'},
-            user_name: '_prize',
-            user_id:  '-1',
-            friendly_id: n,
-            friendly_name: Pokemon.pokemon_info[n-1][:name].capitalize
-          )
-          
-          PokeShuffle.create(
-            user_id: '_prize',
-            point_id: point.id
-          )
+          point = self.create_point_and_shuffle
           render_and_log_to_db(json: {error: point}, status: 400)
         end
       else
@@ -171,24 +177,7 @@ module Api::V1
       if PokeShuffle.where(user_id: '_prize').all.first
         p "A tourney is already started.."
       else
-        c = 22952
-        (0..10).each do |_|
-          c = [c, 2*Random.rand(151*(151+1)/2)].min
-        end
-        n = 152 - ((1 + Math.sqrt(1**2 + 4*c))/2).to_int
-        
-        point = Point.create(
-          user: {name: '_prize', id: '-1'},
-          user_name: '_prize',
-          user_id:  '-1',
-          friendly_id: n,
-          friendly_name: Pokemon.pokemon_info[n-1][:name].capitalize
-        )
-        
-        PokeShuffle.create(
-          user_id: '_prize',
-          point_id: point.id
-        )
+        point = self.create_point_and_shuffle
         
         p "Tourney starts! The prize for this tourney is #{point.friendly_name}(#{point.friendly_id}). It ends in 8 hours."
         Pusher.trigger('poke_shuffle', 'tourney_start', {
