@@ -29,8 +29,8 @@ class Index extends React.Component {
       .get('/v1/point/most-recent')
       .end(function(err, res){
         let notif = new Notification(`A pokemon has appeared! It's ${res.body.result[0].friendly_name}!`,
-                                     {icon: `https://s3-eu-west-1.amazonaws.com/calpaterson-pokemon/${res.body.result[0].friendly_id}.jpeg`})
-        setTimeout(function(){
+                                     {icon: `https://s3.amazonaws.com/soulwalruspokemon/${('000' + res.body.result[0].friendly_id).substr(-3)}.png`})
+        setTimeout(function(){  
             notif.close();
         }, 10000);
       });

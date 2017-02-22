@@ -83,11 +83,19 @@ module Api::V1
     end
     
     def self.create_point_and_shuffle
-      c = 22952
-      (0..10).each do |_|
-        c = [c, 2*Random.rand(151*(151+1)/2)].min
+      if (Random.rand > 0.5)
+        c = 22952
+        (0..10).each do |_|
+          c = [c, 2*Random.rand(151*(151+1)/2)].min
+        end
+        n = 152 - ((1 + Math.sqrt(1**2 + 4*c))/2).to_int
+      else
+        c = 10100
+        (0..10).each do |_|
+          c = [c, 2*Random.rand(100*(100+1)/2)].min
+        end
+        n = (101 - ((1 + Math.sqrt(1**2 + 4*c))/2).to_int) + 151
       end
-      n = 152 - ((1 + Math.sqrt(1**2 + 4*c))/2).to_int
       
       point = Point.create(
         user: {name: '_prize', id: '-1'},
@@ -119,6 +127,13 @@ module Api::V1
       end
     end
     
+    def self.get_id_weight(id)
+      if id > 151
+        id = (id - 151) * 151.0/100
+      end
+      id
+    end
+    
     def self.end_tourney
       p "End Tourney"
       entries = PokeShuffle.all.map do |entry|
@@ -127,7 +142,7 @@ module Api::V1
       player_entries = entries.reject { |point| point.user_name == '_prize' }
       
       if player_entries.length > 0
-        sum_ids = player_entries.reduce(0) { |sum, obj| sum + obj.friendly_id.to_i }
+        sum_ids = player_entries.reduce(0) { |sum, obj| sum + self.get_id_weight(obj.friendly_id.to_i) }
         random = Random.rand(sum_ids)
         total = 0
         winner = nil
@@ -135,7 +150,7 @@ module Api::V1
         p "Sum IDs: #{sum_ids}"
         p "Random: #{random}"
         player_entries.each do |entry|
-          current_id = entry.friendly_id.to_i
+          current_id = self.get_id_weight(entry.friendly_id.to_i)
           if random >= total && random < (total + current_id)
             winner = entry
             break
@@ -144,7 +159,7 @@ module Api::V1
         end
       
         poke_names = entries.map { |entry| "#{entry.user_name}'s #{entry.friendly_name}(#{entry.friendly_id})" }
-        sum_all_ids = entries.reduce(0) { |sum, obj| sum + obj.friendly_id.to_i }
+        sum_all_ids = entries.reduce(0) { |sum, obj| sum + self.get_id_weight(obj.friendly_id.to_i) }
         
         entries.each do |entry|
           entry.user = winner.user
@@ -160,7 +175,7 @@ module Api::V1
         
         p "Tourney ends!\n#{winner.user_name} Wins (+#{sum_all_ids})! #{winner.user_name} has obtained #{poke_names.join(', ')}"
         Pusher.trigger('poke_shuffle', 'tourney_end', {
-          result: "Tourney ends!\n#{winner.user_name} Wins (+#{sum_all_ids})! #{winner.user_name} has obtained #{poke_names.join(', ')}"
+          result: "Tourney ends!\n#{winner.user_name} Wins (+#{sum_all_ids.round(2)})! #{winner.user_name} has obtained #{poke_names.join(', ')}"
         })
       else
         p 'Tourney ends! There is no winner.'

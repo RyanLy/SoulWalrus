@@ -51,4 +51,7 @@ In the client folder.
 
 1. Get Nodejs v6+
 2. `npm install`
-4. `gulp`
+3. `gulp`
+
+To build for production:
+`gulp build`

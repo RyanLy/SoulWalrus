@@ -125,8 +125,13 @@ module Api::V1
     end
     
     def self.create_points
-      c = 2*Random.rand(151*(151+1)/2)
-      n = 152 - ((1 + Math.sqrt(1**2 + 4*c))/2).to_int
+      if (Random.rand > 0.5)
+        c = 2*Random.rand(151*(151+1)/2)
+        n = 152 - ((1 + Math.sqrt(1**2 + 4*c))/2).to_int
+      else
+        c = 2*Random.rand(100*(100+1)/2)
+        n = (101 - ((1 + Math.sqrt(1**2 + 4*c))/2).to_int) + 151
+      end
       
       point = Point.create(
         user: nil,

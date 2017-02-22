@@ -77,7 +77,7 @@ class PokemonId extends React.Component {
             null
           }
           {
-            this.props.params.friendly_id < 151
+            this.props.params.friendly_id < 251
             ?
             <div className="pull-right">
               <Link to={`/pokemon-id/${parseInt(this.props.params.friendly_id) + 1}`}
