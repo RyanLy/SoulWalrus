@@ -83,20 +83,18 @@ module Api::V1
     end
     
     def self.create_point_and_shuffle
-      if (Random.rand > 0.5)
-        c = 22952
-        (0..10).each do |_|
-          c = [c, 2*Random.rand(151*(151+1)/2)].min
-        end
-        n = 152 - ((1 + Math.sqrt(1**2 + 4*c))/2).to_int
-      else
-        c = 10100
-        (0..10).each do |_|
-          c = [c, 2*Random.rand(100*(100+1)/2)].min
-        end
-        n = (101 - ((1 + Math.sqrt(1**2 + 4*c))/2).to_int) + 151
+      c = 22952
+      (0..10).each do |_|
+        c = [c, 2*Random.rand(151*(151+1)/2)].min
       end
-      
+      n = 152 - ((1 + Math.sqrt(1**2 + 4*c))/2)
+
+      if Random.rand > 0.5
+        n = (n * 100.0/151 + 151).to_int
+      else
+        n = n.to_int
+      end
+
       point = Point.create(
         user: {name: '_prize', id: '-1'},
         user_name: '_prize',
