@@ -33,14 +33,14 @@ module Api::V1
           result[user_id]['poke_value'] = 0
         end
 
-        if result[user_id]['best_pokemon'].nil? or point['friendly_id'].to_i > result[user_id]['best_pokemon']['friendly_id'].to_i
+        if result[user_id]['best_pokemon'].nil? or point['value'].to_f > result[user_id]['best_pokemon']['value'].to_f
           result[user_id]['best_pokemon'] = point
         end
         
         result[user_id]['points'] += 1
-        result[user_id]['poke_value'] += point['friendly_id'].to_i
+        result[user_id]['poke_value'] += point['value'].to_f
       end
-      render_and_log_to_db(json: {result: Hash[result.sort_by {|_key, value| value['poke_value'].to_int}.reverse]}, status: 200)
+      render_and_log_to_db(json: {result: Hash[result.sort_by {|_key, value| value['poke_value'].to_f}.reverse]}, status: 200)
     end
     
     
