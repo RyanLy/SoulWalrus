@@ -95,12 +95,12 @@ module Api::V1
       (0..10).each do |_|
         c = [c, 2*Random.rand(151*(151+1)/2)].min
       end
-      n = 152 - ((1 + Math.sqrt(1**2 + 4*c))/2)
+      n = ((1 + Math.sqrt(1**2 + 4*c))/2)
 
       if Random.rand > 0.5
-        n = (n * 100.0/151 + 151).to_int
+        n = (((152 - n) * 100/151).ceil + 151).to_int
       else
-        n = n.to_int
+        n = 152 - n.to_int
       end
 
       point = Point.create(
