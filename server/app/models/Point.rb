@@ -6,6 +6,7 @@ class Point
   field :points
   field :description
   field :friendly_id
+  field :value
   field :friendly_name
   field :user_name
   field :user_id

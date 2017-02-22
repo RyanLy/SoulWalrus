@@ -31,14 +31,14 @@ module Api::V1
               entered_pokemon = Point.find_by_id(entered.point_id)
               entered.point_id = point.id
               entered.save
-              render_and_log_to_db(json: {result: "#{point.user_name}'s #{point.friendly_name}(#{point.friendly_id}) has been entered into the tournament. "\
-                                                  "This entry replaces #{entered_pokemon.friendly_name}(#{entered_pokemon.friendly_id})."}, status: 200)
+              render_and_log_to_db(json: {result: "#{point.user_name}'s #{point.friendly_name}(#{point.friendly_id})[#{point.value}] has been entered into the tournament. "\
+                                                  "This entry replaces #{entered_pokemon.friendly_name}(#{entered_pokemon.friendly_id})[#{entered_pokemon.value}]."}, status: 200)
             else
               PokeShuffle.create(
                 user_id: allowed_params[:user]['id'],
                 point_id: point.id
               )
-              render_and_log_to_db(json: {result: "#{point.user_name}'s #{point.friendly_name}(#{point.friendly_id}) has been entered into the tournament."}, status: 200)
+              render_and_log_to_db(json: {result: "#{point.user_name}'s #{point.friendly_name}(#{point.friendly_id})[#{point.value}] has been entered into the tournament."}, status: 200)
             end
           else
             allowed_friendly_name_int = allowed_friendly_name.to_i
@@ -73,12 +73,20 @@ module Api::V1
         if entered
           entered_pokemon = Point.find_by_id(entered.point_id)
           entered.delete
-          render_and_log_to_db(json: {result: "#{entered_pokemon.user_name}'s #{entered_pokemon.friendly_name}(#{entered_pokemon.friendly_id}) has been removed from the tournament."}, status: 200)
+          render_and_log_to_db(json: {result: "#{entered_pokemon.user_name}'s #{entered_pokemon.friendly_name}(#{entered_pokemon.friendly_id})[#{entered_pokemon.value}] has been removed from the tournament."}, status: 200)
         else
           render_and_log_to_db(json: {result: "No Pokemon was entered."}, status: 200)
         end
       else
         render_and_log_to_db(json: {error: 'Please enter a valid secret.'}, status: 400)
+      end
+    end
+    
+    def self.get_id_weight(id)
+      if id > 151
+        (id - 151) * 151.0/100
+      else
+        id
       end
     end
     
@@ -100,6 +108,7 @@ module Api::V1
         user_name: '_prize',
         user_id:  '-1',
         friendly_id: n,
+        value: self.get_id_weight(n),
         friendly_name: Pokemon.pokemon_info[n-1][:name].capitalize
       )
       
@@ -125,13 +134,6 @@ module Api::V1
       end
     end
     
-    def self.get_id_weight(id)
-      if id > 151
-        id = (id - 151) * 151.0/100
-      end
-      id
-    end
-    
     def self.end_tourney
       p "End Tourney"
       entries = PokeShuffle.all.map do |entry|
@@ -140,7 +142,7 @@ module Api::V1
       player_entries = entries.reject { |point| point.user_name == '_prize' }
       
       if player_entries.length > 0
-        sum_ids = player_entries.reduce(0) { |sum, obj| sum + self.get_id_weight(obj.friendly_id.to_i) }
+        sum_ids = player_entries.reduce(0) { |sum, obj| sum + obj.value.to_f }
         random = Random.rand(sum_ids)
         total = 0
         winner = nil
@@ -148,7 +150,7 @@ module Api::V1
         p "Sum IDs: #{sum_ids}"
         p "Random: #{random}"
         player_entries.each do |entry|
-          current_id = self.get_id_weight(entry.friendly_id.to_i)
+          current_id = entry.value.to_f
           if random >= total && random < (total + current_id)
             winner = entry
             break
@@ -156,8 +158,8 @@ module Api::V1
           total += current_id
         end
       
-        poke_names = entries.map { |entry| "#{entry.user_name}'s #{entry.friendly_name}(#{entry.friendly_id})" }
-        sum_all_ids = entries.reduce(0) { |sum, obj| sum + self.get_id_weight(obj.friendly_id.to_i) }
+        poke_names = entries.map { |entry| "#{entry.user_name}'s #{entry.friendly_name}(#{entry.friendly_id})[#{entry.value}]" }
+        sum_all_ids = entries.reduce(0) { |sum, obj| sum + obj.value.to_f }
         
         entries.each do |entry|
           entry.user = winner.user
@@ -192,7 +194,7 @@ module Api::V1
       else
         point = self.create_point_and_shuffle
         
-        p "Tourney starts! The prize for this tourney is #{point.friendly_name}(#{point.friendly_id}). It ends in 8 hours."
+        p "Tourney starts! The prize for this tourney is #{point.friendly_name}(#{point.friendly_id})[#{point.value}]. It ends in 8 hours."
         Pusher.trigger('poke_shuffle', 'tourney_start', {
           result: point
         })

@@ -27,7 +27,7 @@ class PokeImage extends React.Component {
     return (
       <div>
         <Link to={'/pokemon-id/' + this.props.point.friendly_id} className="router-link--underline--false">
-          <Paper data-tip={`${this.props.point.friendly_name} (${this.props.point.friendly_id})`} style={style} zDepth={2} circle={true} children={  
+          <Paper data-tip={`${this.props.point.friendly_name} (${this.props.point.friendly_id})[${this.props.point.value}]`} style={style} zDepth={2} circle={true} children={  
             <img style={img_style}
                  src={`https://s3.amazonaws.com/soulwalruspokemon/${('000' + this.props.point.friendly_id).substr(-3)}.png`} />} 
           />

@@ -54,7 +54,7 @@ module Api::V1
     
     def get_user
       points = Point.eval_limit(10000).batch(2500).where(user_name: allowed_params['user_name']).sort_by do |point|
-        [point.friendly_id.to_i, point.capture_date.to_i]
+        [point.value.to_i, point.capture_date.to_i]
       end.reverse
       
       if points
@@ -124,8 +124,16 @@ module Api::V1
       end
     end
     
+    def self.get_id_weight(id)
+      if id > 151
+        (id - 151) * 151.0/100
+      else
+        id
+      end
+    end
+    
     def self.create_points
-      c = 2*Random.rand(151*(151+1)/2)
+      c = 2*Random.rand(151.0*(151+1)/2)
       n = 152 - ((1 + Math.sqrt(1**2 + 4*c))/2)
 
       if Random.rand > 0.5
@@ -141,6 +149,7 @@ module Api::V1
         description: 'Points v1',
         create_date: DateTime.now,
         friendly_id: n,
+        value: self.get_id_weight(n),
         friendly_name: Pokemon.pokemon_info[n-1][:name].capitalize
       )
       Pusher.trigger('point', 'point_created', {
