@@ -2,7 +2,7 @@ module Api::V1
   class PointController < ApiController
     
     @@point_update_mutex = Mutex.new
-    # Temporarily cache responses on the server instance
+    # Temporarily cache responses on the server instance, Switch to redis or memcache soon...
     @@leaderboardCachedResponse = {}
     @@mostRecentCachedResponse = {}
     @@cacheExpiryLeaderBoard = DateTime.now
@@ -139,9 +139,9 @@ module Api::V1
             Pusher.trigger('point', 'point_updated', {
               result: point
             })
+            @@cacheExpiryLeaderBoard = DateTime.now + 1.0/24
+            @@cacheExpiryMostRecent = DateTime.now + 1.0/24
             render_and_log_to_db(json: {result: point}, status: 200)
-            Api::V1::PointController.refresh_and_cache_leaderboard
-            Api::V1::PointController.refresh_and_cache_recent
           else
             render_and_log_to_db(json: {error: "This #{point['friendly_name']} has already been captured by #{point['user']['name']}."}, status: 400)
           end
