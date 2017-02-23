@@ -39,6 +39,7 @@ module Api::V1
         
         result[user_id]['points'] += 1
         result[user_id]['poke_value'] += point['value'].to_f
+        result[user_id]['poke_value'] = result[user_id]['poke_value'].round(2)
       end
       render_and_log_to_db(json: {result: Hash[result.sort_by {|_key, value| value['poke_value'].to_f}.reverse]}, status: 200)
     end
