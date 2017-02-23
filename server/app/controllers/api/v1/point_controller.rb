@@ -2,6 +2,11 @@ module Api::V1
   class PointController < ApiController
     
     @@point_update_mutex = Mutex.new
+    # Temporarily cache responses on the server instance
+    @@leaderboardCachedResponse = {}
+    @@mostRecentCachedResponse = {}
+    @@cacheExpiryLeaderBoard = DateTime.now
+    @@cacheExpiryMostRecent = DateTime.now
 
     def index
       result = {}
@@ -22,34 +27,46 @@ module Api::V1
     
     def leaderboard
       result = {}
-      Point.eval_limit(10000).batch(2500).reject{ |u| u['user_name'] == '_prize' }.each do |point|
-        user_name = point['user_name'] || 'Not Claimed'
-        user_id = point['user_id'] || 'Not Claimed'
-        
-        if result[user_id].nil?
-          result[user_id] = {}
-          result[user_id]['user_name'] = user_name
-          result[user_id]['points'] = 0
-          result[user_id]['poke_value'] = 0
-        end
+      if DateTime.now > @@cacheExpiryLeaderBoard or @@leaderboardCachedResponse.empty?
+        Point.eval_limit(10000).batch(2500).reject{ |u| u['user_name'] == '_prize' }.each do |point|
+          user_name = point['user_name'] || 'Not Claimed'
+          user_id = point['user_id'] || 'Not Claimed'
+          
+          if result[user_id].nil?
+            result[user_id] = {}
+            result[user_id]['user_name'] = user_name
+            result[user_id]['points'] = 0
+            result[user_id]['poke_value'] = 0
+          end
 
-        if result[user_id]['best_pokemon'].nil? or point['value'].to_f > result[user_id]['best_pokemon']['value'].to_f
-          result[user_id]['best_pokemon'] = point
+          if result[user_id]['best_pokemon'].nil? or point['value'].to_f > result[user_id]['best_pokemon']['value'].to_f
+            result[user_id]['best_pokemon'] = point
+          end
+          
+          result[user_id]['points'] += 1
+          result[user_id]['poke_value'] += point['value'].to_f
+          result[user_id]['poke_value'] = result[user_id]['poke_value'].round(2)
         end
-        
-        result[user_id]['points'] += 1
-        result[user_id]['poke_value'] += point['value'].to_f
-        result[user_id]['poke_value'] = result[user_id]['poke_value'].round(2)
+        @@leaderboardCachedResponse = result
+        @@cacheExpiryLeaderBoard = DateTime.now + 1.0/24
+      else
+        result = @@leaderboardCachedResponse
       end
       render_and_log_to_db(json: {result: Hash[result.sort_by {|_key, value| value['poke_value'].to_f}.reverse]}, status: 200)
     end
     
     
     def get_most_recent
-      points = Point.eval_limit(10000).batch(2500).reject{ |u| u['user_name'] == '_prize' }.sort do |a, b|
-        b.create_date.to_i <=> a.create_date.to_i
+      points = {}
+      if DateTime.now > @@cacheExpiryMostRecent or @@mostRecentCachedResponse.empty?
+        points = Point.eval_limit(10000).batch(2500).reject{ |u| u['user_name'] == '_prize' }.sort do |a, b|
+          b.create_date.to_i <=> a.create_date.to_i
+        end
+        @@mostRecentCachedResponse = points
+        @@cacheExpiryMostRecent = DateTime.now + 1.0/24
+      else
+        points = @@mostRecentCachedResponse
       end
-
       render_and_log_to_db(json: {result: points[0..4]}, status: 200)
     end
     
@@ -115,6 +132,8 @@ module Api::V1
             Pusher.trigger('point', 'point_updated', {
               result: point
             })
+            @@cacheExpiryLeaderBoard = DateTime.now
+            @@cacheExpiryMostRecent = DateTime.now
             render_and_log_to_db(json: {result: point}, status: 200)
           else
             render_and_log_to_db(json: {error: "This #{point['friendly_name']} has already been captured by #{point['user']['name']}."}, status: 400)
@@ -156,6 +175,8 @@ module Api::V1
       Pusher.trigger('point', 'point_created', {
         result: point
       })
+      @@cacheExpiryLeaderBoard = DateTime.now
+      @@cacheExpiryMostRecent = DateTime.now
     end
     
     private
