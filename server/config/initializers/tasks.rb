@@ -10,6 +10,14 @@ scheduler.every '1m' do
   Api::V1::CsgoController.pollLobby
 end
 
+if Rails.env.development?
+  scheduler.every '30s' do
+    Api::V1::PointController.create_points
+    Api::V1::PokeShuffleController.end_tourney
+    Api::V1::PokeShuffleController.start_tourney
+  end
+end
+
 scheduler.every '30s' do
   generated = Random.rand(120)
   p "Try to create a point: #{generated}"

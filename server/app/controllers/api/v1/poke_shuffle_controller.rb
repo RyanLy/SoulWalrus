@@ -6,7 +6,9 @@ module Api::V1
         point = Point.find_by_id(entry.point_id)
         {
           user_name: point.user_name == '_prize' ? 'Prize' : point.user_name,
-          friendly_name: point.friendly_name
+          friendly_name: point.friendly_name,
+          friendly_id: point.friendly_id,
+          value: point.value
         }
       end
       render_and_log_to_db(json: {result: result}, status: 200)
