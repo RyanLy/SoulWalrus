@@ -112,8 +112,8 @@ module Api::V1
           create_date: DateTime.now
         )
         point.save
-        Api::V1::PointController.refresh_and_cache_leaderboard
-        Api::V1::PointController.refresh_and_cache_recent
+        CacheLeaderboard.perform_async
+        CacheRecent.perform_async
         render_and_log_to_db(json: {result: point}, status: 200)
       else
         render_and_log_to_db(json: {error: "Please enter a valid secret."}, status: 400)
@@ -139,8 +139,8 @@ module Api::V1
             Pusher.trigger('point', 'point_updated', {
               result: point
             })
-            @@cacheExpiryLeaderBoard = DateTime.now
-            @@cacheExpiryMostRecent = DateTime.now
+            CacheLeaderboard.perform_async
+            CacheRecent.perform_async
             render_and_log_to_db(json: {result: point}, status: 200)
           else
             render_and_log_to_db(json: {error: "This #{point['friendly_name']} has already been captured by #{point['user']['name']}."}, status: 400)
@@ -182,8 +182,8 @@ module Api::V1
       Pusher.trigger('point', 'point_created', {
         result: point
       })
-      Api::V1::PointController.refresh_and_cache_leaderboard
-      Api::V1::PointController.refresh_and_cache_recent
+      CacheLeaderboard.perform_async
+      CacheRecent.perform_async
     end
     
     private

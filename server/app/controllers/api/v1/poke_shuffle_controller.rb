@@ -177,8 +177,8 @@ module Api::V1
         Pusher.trigger('poke_shuffle', 'tourney_end', {
           result: "Tourney ends!\n#{winner.user_name} Wins (+#{sum_all_ids.round(2)})! #{winner.user_name} has obtained #{poke_names.join(', ')}"
         })
-        Api::V1::PointController.refresh_and_cache_leaderboard
-        Api::V1::PointController.refresh_and_cache_recent
+        CacheLeaderboard.perform_async
+        CacheRecent.perform_async
       else
         p 'Tourney ends! There is no winner.'
         PokeShuffle.all.each(&:delete)
