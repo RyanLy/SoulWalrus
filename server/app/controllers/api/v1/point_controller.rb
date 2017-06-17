@@ -61,8 +61,10 @@ module Api::V1
     def leaderboard
       Rails.cache.dalli.with do |client|
         leaderboardCachedResponse = client.get('leaderboardCachedResponse')
+
         if not leaderboardCachedResponse
           Api::V1::PointController.refresh_and_cache_leaderboard
+          leaderboardCachedResponse = client.get('leaderboardCachedResponse')
         end
         render_and_log_to_db(json: {result: Hash[leaderboardCachedResponse.sort_by {|_key, value| value['poke_value'].to_f}.reverse]}, status: 200)
       end
@@ -74,6 +76,7 @@ module Api::V1
         
         if not mostRecentCachedResponse
           Api::V1::PointController.refresh_and_cache_recent
+          mostRecentCachedResponse = client.get('mostRecentCachedResponse')
         end
         render_and_log_to_db(json: {result: mostRecentCachedResponse[0..4]}, status: 200)
       end
