@@ -78,6 +78,10 @@ Rails.application.configure do
 
   # Do not dump schema after migrations.
   # config.active_record.dump_schema_after_migration = false
+  
+  # Memcache
+  # TODO: Change to proper hostname soon
+  config.cache_store = :dalli_store, 'localhost', { :pool_size => 5, :expires_in => 1.day, :compress => true }
 end
 
 Dynamoid.configure do |config|

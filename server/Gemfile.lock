@@ -56,6 +56,8 @@ GEM
       execjs
     coffee-script-source (1.10.0)
     concurrent-ruby (1.0.3)
+    connection_pool (2.2.1)
+    dalli (2.7.6)
     debug_inspector (0.0.2)
     domain_name (0.5.20160310)
       unf (>= 0.0.5, < 1.0.0)
@@ -178,6 +180,8 @@ PLATFORMS
 DEPENDENCIES
   aws-sdk (~> 2)
   byebug
+  connection_pool
+  dalli
   dynamoid (~> 1)
   http
   jbuilder (~> 2.0)

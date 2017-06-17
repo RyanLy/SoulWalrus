@@ -35,6 +35,12 @@ gem 'unirest'
 # Async Jobs
 gem 'sucker_punch', '~> 2.0'
 
+# Memcache
+gem 'dalli'
+
+# Puma with memcache
+gem 'connection_pool'
+
 # Use ActiveModel has_secure_password
 # gem 'bcrypt', '~> 3.1.7'
 

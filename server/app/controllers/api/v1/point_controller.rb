@@ -2,11 +2,6 @@ module Api::V1
   class PointController < ApiController
     
     @@point_update_mutex = Mutex.new
-    # Temporarily cache responses on the server instance, Switch to redis or memcache soon...
-    @@leaderboardCachedResponse = {}
-    @@mostRecentCachedResponse = {}
-    @@cacheExpiryLeaderBoard = DateTime.now
-    @@cacheExpiryMostRecent = DateTime.now
 
     def index
       result = {}
@@ -46,8 +41,9 @@ module Api::V1
         result[user_id]['poke_value'] += point['value'].to_f
         result[user_id]['poke_value'] = result[user_id]['poke_value'].round(2)
       end
-      @@leaderboardCachedResponse = result
-      @@cacheExpiryLeaderBoard = DateTime.now + 1.0/24
+      Rails.cache.dalli.with do |client|
+        client.set('leaderboardCachedResponse', result)
+      end
       result
     end
     
@@ -56,23 +52,31 @@ module Api::V1
       points = Point.eval_limit(10000).batch(2500).reject{ |u| u['user_name'] == '_prize' }.sort do |a, b|
         b.create_date.to_i <=> a.create_date.to_i
       end
-      @@mostRecentCachedResponse = points
-      @@cacheExpiryMostRecent = DateTime.now + 1.0/24
+      Rails.cache.dalli.with do |client|
+        client.set('mostRecentCachedResponse', points)
+      end
       points
     end
     
     def leaderboard
-      if DateTime.now > @@cacheExpiryLeaderBoard or @@leaderboardCachedResponse.empty?
-        Api::V1::PointController.refresh_and_cache_leaderboard
+      Rails.cache.dalli.with do |client|
+        leaderboardCachedResponse = client.get('leaderboardCachedResponse')
+        if not leaderboardCachedResponse
+          Api::V1::PointController.refresh_and_cache_leaderboard
+        end
+        render_and_log_to_db(json: {result: Hash[leaderboardCachedResponse.sort_by {|_key, value| value['poke_value'].to_f}.reverse]}, status: 200)
       end
-      render_and_log_to_db(json: {result: Hash[@@leaderboardCachedResponse.sort_by {|_key, value| value['poke_value'].to_f}.reverse]}, status: 200)
     end
     
     def get_most_recent
-      if DateTime.now > @@cacheExpiryMostRecent or @@mostRecentCachedResponse.empty?
-        Api::V1::PointController.refresh_and_cache_recent
+      Rails.cache.dalli.with do |client|
+        mostRecentCachedResponse = client.get('mostRecentCachedResponse')
+        
+        if not mostRecentCachedResponse
+          Api::V1::PointController.refresh_and_cache_recent
+        end
+        render_and_log_to_db(json: {result: mostRecentCachedResponse[0..4]}, status: 200)
       end
-      render_and_log_to_db(json: {result: @@mostRecentCachedResponse[0..4]}, status: 200)
     end
     
     def get_user
