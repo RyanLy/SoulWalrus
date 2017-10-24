@@ -159,23 +159,27 @@ module Api::V1
     end
     
     def self.get_id_weight(id)
-      if id > 151
+      if id > 251
+        ((id - 251) * 151.0/135).round(2)
+      elsif id > 151
         (id - 151) * 151.0/100
       else
         id
       end
     end
-    
+
     def self.create_points
       c = 2*Random.rand(151.0*(151+1)/2)
       n = ((1 + Math.sqrt(1**2 + 4*c))/2)
       
-      if Random.rand > 0.5
+      if Random.rand > 0.66
+        n = (((152 - n) * 135/151).ceil + 251).to_int
+      elsif Random.rand > 0.33
         n = (((152 - n) * 100/151).ceil + 151).to_int
       else
         n = 152 - n.to_int
       end
-      
+
       point = Point.create(
         user: nil,
         user_name: nil,
