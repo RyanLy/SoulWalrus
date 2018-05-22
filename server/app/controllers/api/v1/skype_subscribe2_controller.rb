@@ -8,7 +8,7 @@ module Api::V1
 
     def create
       if allowed_params['conversation']['id']
-        if SkypeSubscribe2.where(:convo_id => allowed_params['conversation']['id']).all.empty?
+        if SkypeSubscribe2.where(:convo_id => allowed_params['conversation']['id']).all.to_a.empty?
           subscriber = SkypeSubscribe2.new(allowed_params.merge(
             convo_id: allowed_params['conversation']['id']
           ))

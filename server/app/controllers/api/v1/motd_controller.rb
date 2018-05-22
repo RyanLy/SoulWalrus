@@ -2,7 +2,7 @@ module Api::V1
   class MotdController < ApiController
 
     def index
-      motds = Motd.all
+      motds = Motd.all.to_a
       if motds.empty?
         render_and_log_to_db(json: {error: 'No data'}, status: 400)
       else
@@ -12,7 +12,7 @@ module Api::V1
 
     def update
       if params[:message]
-        motds = Motd.all
+        motds = Motd.all.to_a
         if motds.empty?
           motd = Motd.new
         else

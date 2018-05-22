@@ -7,6 +7,7 @@ require_relative '../../app/models/CsgoLobby'
 require_relative '../../app/models/SkypeSubscribe2'
 require_relative '../../app/models/Point'
 require_relative '../../app/models/PokeShuffle'
+require_relative '../../app/models/User'
 
 # Be sure to restart your server when you modify this file.
 
@@ -34,3 +35,4 @@ CsgoLobby.create_table
 SkypeSubscribe2.create_table
 Point.create_table
 PokeShuffle.create_table
+User.create_table

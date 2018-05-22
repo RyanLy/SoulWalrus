@@ -20,29 +20,37 @@ module Api::V1
           allowed_user_id = allowed_params[:user]['id']
           allowed_friendly_name = allowed_params[:friendly_name]
 
-          points = Point.eval_limit(10000).batch(2500).all.select { |point| point['user_id'] == allowed_user_id }
+          # Figure out if the user has the point
+          # points = Point.record_limit(50000).batch(2500).all.select { |point| point['user_id'] == allowed_user_id }
+          user = User.find_by_id(allowed_user_id)
+          point_ids = user[:points].values.map do |point_ids|
+            point_ids
+          end.flatten
+          points = Point.find_all(point_ids)
           point = points.select { |point| point['friendly_name'] == allowed_friendly_name.capitalize }.first
           if point.nil?
             point = points.select { |point| point['friendly_id'] == allowed_friendly_name.capitalize }.first
           end
           
           if point
+            # Figure out if user is already entered
             entered = PokeShuffle.where(user_id: allowed_params[:user]['id']).all.first
           
             if entered
               entered_pokemon = Point.find_by_id(entered.point_id)
               entered.point_id = point.id
               entered.save
-              render_and_log_to_db(json: {result: "#{point.user_name}'s #{point.friendly_name}(#{point.friendly_id}|#{point.value}) has been entered into the tournament. "\
+              render_and_log_to_db(json: {result: "#{user.user_name}'s #{point.friendly_name}(#{point.friendly_id}|#{point.value}) has been entered into the tournament. "\
                                                   "This entry replaces #{entered_pokemon.friendly_name}(#{entered_pokemon.friendly_id}|#{entered_pokemon.value})."}, status: 200)
             else
               PokeShuffle.create(
                 user_id: allowed_params[:user]['id'],
                 point_id: point.id
               )
-              render_and_log_to_db(json: {result: "#{point.user_name}'s #{point.friendly_name}(#{point.friendly_id}|#{point.value}) has been entered into the tournament."}, status: 200)
+              render_and_log_to_db(json: {result: "#{user.user_name}'s #{point.friendly_name}(#{point.friendly_id}|#{point.value}) has been entered into the tournament."}, status: 200)
             end
           else
+            # Recommendations
             allowed_friendly_name_int = allowed_friendly_name.to_i
             if allowed_friendly_name_int.to_s === allowed_friendly_name
               unique_points = points.select do |point|
@@ -144,7 +152,8 @@ module Api::V1
       p "End Tourney"
       entries = PokeShuffle.all.map do |entry|
         Point.find_by_id(entry.point_id)
-      end
+      end.compact
+      
       player_entries = entries.reject { |point| point.user_name == '_prize' }
       
       if player_entries.length > 0
@@ -167,8 +176,22 @@ module Api::V1
         poke_names = entries.map { |entry| "#{entry.user_name}'s #{entry.friendly_name}(#{entry.friendly_id}|#{entry.value})" }
         sum_all_ids = entries.reduce(0) { |sum, obj| sum + obj.value.to_f }
         
+        winner = User.find_by_id(winner.user_id)
+
         entries.each do |entry|
-          entry.user = winner.user
+          loser = User.find_by_id(entry.user_id);
+          entry_id = entry[:friendly_id].to_i
+          loser[:points][entry_id] = (loser[:points][entry_id] || []).reject do |point_id|
+            point_id == entry[:id]
+          end
+
+          if !winner[:points][entry_id]
+            winner[:points][entry_id] = []
+          end
+
+          winner[:points][entry_id] = winner[:points][entry_id].append(entry[:id]).uniq
+          winner.save
+
           entry.user_name = winner.user_name
           entry.user_id = winner.user_id
           if entry.create_date.nil?
@@ -176,6 +199,7 @@ module Api::V1
           end
           entry.capture_date = DateTime.now
           entry.save
+
         end
         PokeShuffle.all.each(&:delete)
         
@@ -183,8 +207,8 @@ module Api::V1
         Pusher.trigger('poke_shuffle', 'tourney_end', {
           result: "Tourney ends!\n#{winner.user_name} Wins (+#{sum_all_ids.round(2)})! #{winner.user_name} has obtained #{poke_names.join(', ')}"
         })
-        CacheLeaderboard.perform_async
-        CacheRecent.perform_async
+        # CacheLeaderboard.perform_async
+        # CacheRecent.perform_async
       else
         p 'Tourney ends! There is no winner.'
         PokeShuffle.all.each(&:delete)

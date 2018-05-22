@@ -42,7 +42,8 @@ Rails.application.configure do
   # config.action_view.raise_on_missing_translations = true
   
   # Memcache
-  config.cache_store = :dalli_store, 'localhost', { :pool_size => 5, :expires_in => 1.day, :compress => true }
+  # config.cache_store = :dalli_store, 'localhost', { :pool_size => 5, :expires_in => 1.day, :compress => true }
+  config.action_controller.perform_caching = false
 end
 
 Dynamoid.configure do |config|

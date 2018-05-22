@@ -8,7 +8,7 @@ module Api::V1
 
     def create
       if params['chatid']
-        if SkypeSubscribe.where(:chatid => params['chatid']).all.empty?
+        if SkypeSubscribe.where(:chatid => params['chatid']).all.to_a.empty?
           subscriber = SkypeSubscribe.new(
             :chatid => params['chatid'],
             :submitted_by => params['submitted_by'],
@@ -25,7 +25,7 @@ module Api::V1
     end
     
     def destroy
-      results = SkypeSubscribe.where(:chatid => params['chatid']).all
+      results = SkypeSubscribe.where(:chatid => params['chatid']).all.to_a
       if results.empty?
         render_and_log_to_db(json: {error:  'Subscriber not on the list.'}, status: 400)
       else

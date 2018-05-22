@@ -30,7 +30,7 @@ class Eightball
   ]
   
   def self.loadAnswers
-    if Eightball.all.empty?
+    if Eightball.all.to_a.empty?
       for @answer, @status in @@DEFAULT_BALL_ANSWERS
         p @answer
         p @status

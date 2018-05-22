@@ -14,7 +14,7 @@ gem 'sdoc', '~> 0.4.0', group: :doc
 gem 'aws-sdk', '~> 2'
 
 # ORM for DynamoDB
-gem 'dynamoid', '~> 1'
+gem 'dynamoid', '~> 2'
 
 gem 'rails-api'
 

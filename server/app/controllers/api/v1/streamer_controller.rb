@@ -17,7 +17,7 @@ module Api::V1
       if params['id']
         queryName = params['id'].downcase
       
-        if Streamer.where(:name => queryName).all.empty?
+        if Streamer.where(:name => queryName).all.to_a.empty?
           res = HTTP.headers("Client-ID": ENV['TWITCH_CLIENT_ID'])
                     .get(@@TWITCH_USERS_ENDPOINT + queryName)
           result = JSON.parse(res.to_s)
@@ -52,7 +52,7 @@ module Api::V1
 
     def destroy
       queryName = params['id'].downcase
-      results = Streamer.where(:name => queryName).all
+      results = Streamer.where(:name => queryName).all.to_a
       if results.empty?
         render_and_log_to_db(json: {error:  'Channel not on the list.'}, status: 400)
       else

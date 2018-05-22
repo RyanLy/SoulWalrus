@@ -2,7 +2,7 @@ module Api::V1
   class EightBallController < ApiController
 
     def index
-      @BALL_ANSWERS = Eightball.all
+      @BALL_ANSWERS = Eightball.all.to_a
       if @BALL_ANSWERS.empty?
         Eightball.loadAnswers
         @BALL_ANSWERS = Eightball.all
