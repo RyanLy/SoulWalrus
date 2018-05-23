@@ -1,7 +1,7 @@
 module Api::V1
   class PointController < ApiController
     
-    @@point_update_mutex = Mutex.new
+    @@point_update_mutex = {}
 
     def index
       result = {}
@@ -87,8 +87,28 @@ module Api::V1
     end
     
     def get_most_recent
+      recents = Recent.all.sort_by do |recent|
+        recent.created_at
+      end
+      
+      recent_ids = recents.map do |recent|
+        recent.id
+      end.reverse
+
+      p recent_ids
+
+      results = Point.find_all(recent_ids.first(5)).sort_by do |recent|
+        recent.created_at
+      end.reverse.to_a
+      
+      if recents.length > 10
+        recents[0..-6].each do |recent|
+          recent.delete
+        end
+      end
+
       # mostRecentCachedResponse = Api::V1::PointController.refresh_and_cache_recent
-      render_and_log_to_db(json: {result: []}, status: 200)
+      render_and_log_to_db(json: {result: results}, status: 200)
       # Rails.cache.dalli.with do |client|
       #   mostRecentCachedResponse = client.get('mostRecentCachedResponse')
         
@@ -197,21 +217,15 @@ module Api::V1
       render_and_log_to_db(json: {error: 'Please specify an point_id'}, status: 400) unless allowed_params['point_id']
       
       if allowed_params['point_secret'] == ENV['POINT_SECRET']
-        @@point_update_mutex.synchronize do
+        if !@@point_update_mutex[allowed_params['point_id']]
+          @@point_update_mutex[allowed_params['point_id']] = Mutex.new
+        end
+        @@point_update_mutex[allowed_params['point_id']].synchronize do
           point = Point.find_by_id(allowed_params['point_id'])
           if !point
             render_and_log_to_db(json: {error: 'Invalid point id. Nice try...'}, status: 400)
           elsif point.user.nil?
-            point.user = allowed_params['user']
-            point.user_name = allowed_params['user']['name']
-            point.user_id = allowed_params['user']['id']
-            point.capture_date = DateTime.now
-            point.save
-            Pusher.trigger('point', 'point_updated', {
-              result: point
-            })
-
-            user = User.find_by_id(point.user_id)
+            user = User.find_by_id(allowed_params['user']['id'])
             if !user
               user = User.create(
                 user_id: allowed_params['user']['id'],
@@ -220,6 +234,18 @@ module Api::V1
                 names: []
               )
             end
+            
+            point.user = {
+              :name => user[:user_name],
+              :id => user[:user_id]
+            }
+            point.user_name = user[:user_name]
+            point.user_id = user[:user_id]
+            point.capture_date = DateTime.now
+            point.save
+            Pusher.trigger('point', 'point_updated', {
+              result: point
+            })
 
             friendly_id = point[:friendly_id].to_i
             if !user[:points][friendly_id]
@@ -230,15 +256,14 @@ module Api::V1
             user[:names] = user[:names].append(allowed_params['user']['name']).compact
             user.save
 
-            point['user']['name'] = user[:user_name]
-            
             # CacheLeaderboard.perform_async
             # CacheRecent.perform_async
             render_and_log_to_db(json: {result: point}, status: 200)
           else
-            render_and_log_to_db(json: {error: "This #{point['friendly_name']} has already been captured by #{point['user']['name']}."}, status: 400)
+            render_and_log_to_db(json: {error: "This #{point['friendly_name']} has already been captured by #{point[:user_name]}."}, status: 400)
           end
         end
+        @@point_update_mutex.delete(allowed_params['point_id'])
       else
         render_and_log_to_db(json: {error: "Please enter a valid secret."}, status: 400)
       end
@@ -304,6 +329,11 @@ module Api::V1
       Pusher.trigger('point', 'point_created', {
         result: point
       })
+      
+      Recent.create(
+        :id => point.id,
+      )
+      
       # CacheLeaderboard.perform_async
       # CacheRecent.perform_async
     end

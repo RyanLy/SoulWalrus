@@ -22,10 +22,11 @@ module Api::V1
 
           # Figure out if the user has the point
           # points = Point.record_limit(50000).batch(2500).all.select { |point| point['user_id'] == allowed_user_id }
-          user = User.find_by_id(allowed_user_id)
+          user = User.find_by_id(allowed_user_id) || {}
           point_ids = user[:points].values.map do |point_ids|
             point_ids
           end.flatten
+
           points = Point.find_all(point_ids)
           point = points.select { |point| point['friendly_name'] == allowed_friendly_name.capitalize }.first
           if point.nil?
