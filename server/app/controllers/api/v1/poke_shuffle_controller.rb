@@ -13,27 +13,44 @@ module Api::V1
       end
       render_and_log_to_db(json: {result: result}, status: 200)
     end
-    
+
     def create
       if allowed_params[:point_secret] == ENV['POINT_SECRET']
         if not allowed_params[:friendly_name].nil?
           allowed_user_id = allowed_params[:user]['id']
-          allowed_friendly_name = allowed_params[:friendly_name]
+          allowed_friendly_name = allowed_params[:friendly_name] || ''
+
+          user = User.find_by_id(allowed_user_id)
+
+          allowed_friendly_name_int = allowed_friendly_name.to_i
+
+          # If the friendly name is a number
+          if allowed_friendly_name_int.to_s === allowed_friendly_name
+            friendly_id = allowed_friendly_name_int
+          else
+            friendly_id = Pokemon.name_to_number_info(allowed_friendly_name)
+          end
+          if friendly_id
+            point_id = (user[:points][friendly_id] || []).last
+          end
+          if point_id
+            point = Point.find_by_id(point_id)
+          end
 
           # Figure out if the user has the point
           # points = Point.record_limit(50000).batch(2500).all.select { |point| point['user_id'] == allowed_user_id }
-          user = User.find_by_id(allowed_user_id) || {}
-          point_ids = user[:points].values.map do |point_ids|
-            point_ids
-          end.flatten
+          # point_ids = user[:points].values.map do |point_ids|
+          #   point_ids
+          # end.flatten
 
-          points = Point.find_all(point_ids)
-          point = points.select { |point| point['friendly_name'] == allowed_friendly_name.capitalize }.first
-          if point.nil?
-            point = points.select { |point| point['friendly_id'] == allowed_friendly_name.capitalize }.first
-          end
-          
-          if point
+          # points = Point.find_all(point_ids)
+          # point = points.select { |point| point['friendly_name'] == allowed_friendly_name.capitalize }.first
+          # if point.nil?
+          #   point = points.select { |point| point['friendly_id'] == allowed_friendly_name.capitalize }.first
+          # end
+          if !friendly_id
+            render_and_log_to_db(json: {error: 'Please choose a valid pokemon to enter with.'}, status: 400)
+          elsif point
             # Figure out if user is already entered
             entered = PokeShuffle.where(user_id: allowed_params[:user]['id']).all.first
           
@@ -52,22 +69,12 @@ module Api::V1
             end
           else
             # Recommendations
-            allowed_friendly_name_int = allowed_friendly_name.to_i
-            if allowed_friendly_name_int.to_s === allowed_friendly_name
-              unique_points = points.select do |point|
-                point.friendly_id.to_i > allowed_friendly_name_int - 5 &&
-                point.friendly_id.to_i < allowed_friendly_name_int + 5
-              end
-              .collect { |point| { friendly_name: point['friendly_name'], friendly_id: point['friendly_id']} }
-              .uniq
-              .sort_by { |point| point[:friendly_id].to_i }
-              .map { |point| "#{point[:friendly_name]}(#{point[:friendly_id]})" }
-              .join(', ')
-              
-              render_and_log_to_db(json: {error: "Please choose a valid pokemon to enter with. <br/><b>Suggestions:</b> #{unique_points}"}, status: 400)
-            else
-              render_and_log_to_db(json: {error: 'Please choose a valid pokemon to enter with.'}, status: 400)
-            end
+            unique_points = user[:points].keys.select { |point_id| point_id > friendly_id - 5 && point_id < friendly_id + 5 }
+            .collect { |point_id| { friendly_name: Pokemon.pokemon_info[point_id-1][:name].capitalize, friendly_id: point_id } }
+            .sort_by { |point| point[:friendly_id].to_i }
+            .map { |point| "#{point[:friendly_name]}(#{point[:friendly_id]})" }
+            .join(', ')
+            render_and_log_to_db(json: {error: "Please choose a valid pokemon to enter with. <br/><b>Suggestions:</b> #{unique_points}"}, status: 400)
           end
         else
           render_and_log_to_db(json: {error: 'Please choose a valid pokemon to enter with.'}, status: 400)

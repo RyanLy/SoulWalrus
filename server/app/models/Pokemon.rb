@@ -1164,4 +1164,14 @@ class Pokemon
   def self.pokemon_info
     @@poke_info
   end
+
+  def self.name_to_number_info(name)
+    results = {}
+
+    @@poke_info.each_with_index  do |value, index|
+      results[value[:name]] = index + 1
+    end
+
+    results[name.downcase]
+  end
 end

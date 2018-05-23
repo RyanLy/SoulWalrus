@@ -95,8 +95,6 @@ module Api::V1
         recent.id
       end.reverse
 
-      p recent_ids
-
       results = Point.find_all(recent_ids.first(5)).sort_by do |recent|
         recent.created_at
       end.reverse.to_a
