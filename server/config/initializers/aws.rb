@@ -10,17 +10,16 @@ require_relative '../../app/models/PokeShuffle'
 require_relative '../../app/models/User'
 require_relative '../../app/models/Recent'
 
-
 # Be sure to restart your server when you modify this file.
 
-Aws.config.update({
-  region: 'us-east-1',
-})
+Aws.config.update(
+  region: 'us-east-1'
+)
 
 if Rails.env.development?
-  Aws.config.update({
-    credentials: Aws::Credentials.new('REPLACE_WITH_ACCESS_KEY_ID', 'REPLACE_WITH_SECRET_ACCESS_KEY'),
-  })
+  Aws.config.update(
+    credentials: Aws::Credentials.new('REPLACE_WITH_ACCESS_KEY_ID', 'REPLACE_WITH_SECRET_ACCESS_KEY')
+  )
 end
 
 # Use ssl certificate bundled with the gem package

@@ -1,6 +1,6 @@
 class User
   include Dynamoid::Document
-  table :name => :user, :key => :user_id
+  table name: :user, key: :user_id
 
   field :user_name
   field :user_id

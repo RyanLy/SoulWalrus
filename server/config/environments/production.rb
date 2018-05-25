@@ -24,7 +24,7 @@ Rails.application.configure do
 
   # Disable serving static files from the `/public` folder by default since
   # Apache or NGINX already handles this.
-  config.serve_static_files = false #ENV['RAILS_SERVE_STATIC_FILES'].present?
+  config.serve_static_files = false # ENV['RAILS_SERVE_STATIC_FILES'].present?
 
   # Compress JavaScripts and CSS.
   config.assets.js_compressor = :uglifier
@@ -78,22 +78,22 @@ Rails.application.configure do
 
   # Do not dump schema after migrations.
   # config.active_record.dump_schema_after_migration = false
-  
+
   # Memcache
   # TODO: Change to proper hostname soon
-  config.cache_store = :dalli_store, 'localhost', { :pool_size => 5, :expires_in => 1.day, :compress => true }
+  config.cache_store = :dalli_store, 'localhost', { pool_size: 5, expires_in: 1.day, compress: true }
 end
 
 Dynamoid.configure do |config|
-    config.adapter = 'aws_sdk_v2' # This adapter establishes a connection to the DynamoDB servers using Amazon's own AWS gem.
-    config.namespace = 'soulwalrus_production' # To namespace tables created by Dynamoid from other tables you might have. Set to nil to avoid namespacing.
-    config.warn_on_scan = false # Output a warning to the logger when you perform a scan rather than a query on a table.
-    config.read_capacity = 1 # Read capacity for your tables
-    config.write_capacity = 1 # Write capacity for your tables
-  end
+  config.adapter = 'aws_sdk_v2' # This adapter establishes a connection to the DynamoDB servers using Amazon's own AWS gem.
+  config.namespace = 'soulwalrus_production' # To namespace tables created by Dynamoid from other tables you might have. Set to nil to avoid namespacing.
+  config.warn_on_scan = false # Output a warning to the logger when you perform a scan rather than a query on a table.
+  config.read_capacity = 1 # Read capacity for your tables
+  config.write_capacity = 1 # Write capacity for your tables
+end
 
 Pusher.app_id = '202250'
 Pusher.key = 'f35ce6a52f1fc2a358fa'
-Pusher.secret = ENV["PUSHER_SECRET"]
+Pusher.secret = ENV['PUSHER_SECRET']
 Pusher.logger = Rails.logger
 Pusher.encrypted = true

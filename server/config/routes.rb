@@ -1,5 +1,4 @@
 Rails.application.routes.draw do
-  
   # http://andrewberls.com/blog/post/api-versioning-with-rails-4
   scope module: 'api' do
     namespace :v1 do
@@ -24,18 +23,18 @@ Rails.application.routes.draw do
       match 'music' => 'music#get_recommendation', :via => :get
       match 'play-song' => 'music#play_song', :via => :get
       match 'callback' => 'callback#index', :via => :get
-      #match 'twilio' => 'twilio_subscribe#index', :via => :get
-      #match 'twilio' => 'twilio_subscribe#create', :via => :post
-      #match 'twilio' => 'twilio_subscribe#destroy', :via => :delete
+      # match 'twilio' => 'twilio_subscribe#index', :via => :get
+      # match 'twilio' => 'twilio_subscribe#create', :via => :post
+      # match 'twilio' => 'twilio_subscribe#destroy', :via => :delete
       match 'point' => 'point#index', :via => :get
       match 'point' => 'point#create', :via => :post
       match 'point' => 'point#update', :via => :put
       match 'point/leaderboard' => 'point#leaderboard', :via => :get
       match 'point/most-recent' => 'point#get_most_recent', :via => :get
-      
+
       match 'point/:user_name' => 'point#get_user', :via => :get
       match 'point-id/:friendly_id' => 'point#get_pokemon', :via => :get
-      
+
       match 'poke-shuffle' => 'poke_shuffle#index', :via => :get
       match 'poke-shuffle' => 'poke_shuffle#create', :via => :post
       match 'poke-shuffle/prize' => 'poke_shuffle#create_prize', :via => :post
@@ -43,8 +42,6 @@ Rails.application.routes.draw do
     end
   end
 
-
-  
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 
