@@ -24,7 +24,7 @@ module Api::V1
           allowed_friendly_name_int = allowed_friendly_name.to_i
 
           # If the friendly name is a number
-          friendly_id = if allowed_friendly_name_int.to_s === allowed_friendly_name
+          friendly_id = if allowed_friendly_name_int.to_s == allowed_friendly_name
                           allowed_friendly_name_int
                         else
                           Pokemon.name_to_number_info(allowed_friendly_name)
@@ -176,11 +176,10 @@ module Api::V1
           loser[:points][entry_id] = (loser[:points][entry_id] || []).reject do |point_id|
             point_id == entry[:id]
           end
+          loser.save
 
           winner[:points][entry_id] = [] unless winner[:points][entry_id]
-
           winner[:points][entry_id] = winner[:points][entry_id].append(entry[:id]).uniq
-          winner.save
 
           entry.user_name = winner.user_name
           entry.user_id = winner.user_id
@@ -188,6 +187,8 @@ module Api::V1
           entry.capture_date = DateTime.now
           entry.save
         end
+
+        winner.save
         PokeShuffle.all.each(&:delete)
 
         p "Tourney ends!\n#{winner.user_name} Wins (+#{sum_all_ids})! #{winner.user_name} has obtained #{poke_names.join(', ')}"
