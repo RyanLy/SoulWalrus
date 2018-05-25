@@ -33,53 +33,11 @@ module Api::V1
           'best_pokemon' => best_pokemon
         }
       end
-
-      # Point.record_limit(1000).batch(2500).reject{ |u| u['user_name'] == '_prize' }.each do |point|
-      #   user_name = point['user_name'] || 'Not Claimed'
-      #   user_id = point['user_id'] || 'Not Claimed'
-
-      #   if result[user_id].nil?
-      #     result[user_id] = {}
-      #     result[user_id]['user_name'] = user_name
-      #     result[user_id]['points'] = 0
-      #     result[user_id]['poke_value'] = 0
-      #   end
-
-      #   if result[user_id]['best_pokemon'].nil? or point['value'].to_f > result[user_id]['best_pokemon']['value'].to_f
-      #     result[user_id]['best_pokemon'] = point
-      #   end
-
-      #   result[user_id]['points'] += 1
-      #   result[user_id]['poke_value'] += point['value'].to_f
-      #   result[user_id]['poke_value'] = result[user_id]['poke_value'].round(2)
-      # end
-      # Rails.cache.dalli.with do |client|
-      #   client.set('leaderboardCachedResponse', result)
-      # end
       result
     end
 
-    # def self.refresh_and_cache_recent
-    #   points = {}
-    #   points = Point.record_limit(10000).batch(2500).reject{ |u| u['user_name'] == '_prize' }.sort do |a, b|
-    #     b.create_date.to_i <=> a.create_date.to_i
-    #   end
-    #   # Rails.cache.dalli.with do |client|
-    #   #   client.set('mostRecentCachedResponse', points)
-    #   # end
-    #   points
-    # end
 
     def leaderboard
-      # Rails.cache.dalli.with do |client|
-      #   leaderboardCachedResponse = client.get('leaderboardCachedResponse')
-
-      #   if not leaderboardCachedResponse
-      #     Api::V1::PointController.refresh_and_cache_leaderboard
-      #     leaderboardCachedResponse = client.get('leaderboardCachedResponse')
-      #   end
-      #   render_and_log_to_db(json: {result: Hash[leaderboardCachedResponse.sort_by {|_key, value| value['poke_value'].to_f}.reverse]}, status: 200)
-      # end
       leaderboardCachedResponse = Api::V1::PointController.refresh_and_cache_leaderboard
       render_and_log_to_db(json: { result: Hash[leaderboardCachedResponse.sort_by { |_key, value| value['poke_value'].to_f }.reverse] }, status: 200)
     end
@@ -93,42 +51,12 @@ module Api::V1
 
       recents[0..-6].each(&:delete) if recents.length > 10
 
-      # mostRecentCachedResponse = Api::V1::PointController.refresh_and_cache_recent
       render_and_log_to_db(json: { result: results }, status: 200)
-      # Rails.cache.dalli.with do |client|
-      #   mostRecentCachedResponse = client.get('mostRecentCachedResponse')
-
-      #   if not mostRecentCachedResponse
-      #     Api::V1::PointController.refresh_and_cache_recent
-      #     mostRecentCachedResponse = client.get('mostRecentCachedResponse')
-      #   end
-      #   render_and_log_to_db(json: {result: mostRecentCachedResponse[0..4]}, status: 200)
-      # end
     end
 
     def get_user
-      # result = {}
-
       user = User.where(user_name: allowed_params['user_name']).all.first
 
-      # points = user[:points].map do |id, point_ids|
-      #   {
-      #     :point => Api::V1::PointController.create_point_obj(id),
-      #     :count => point_ids.length
-      #   }
-      # end
-
-      # # Change this to new API response
-      # result = points.map do |point|
-      #   {
-      #     :user_name => user[:user_name],
-      #     :user_id => user[:user_id],
-      #     :names => user[:names],
-      #     :friendly_id => point[:point][:friendly_id],
-      #     :friendly_name => point[:point][:friendly_name],
-      #     :value => point[:point][:value]
-      #   }
-      # end
       results = {}
       values = user[:points].map do |id, value|
         results[Api::V1::PointController.get_id_weight(id)] = value
@@ -164,11 +92,6 @@ module Api::V1
         b.create_date.to_i <=> a.create_date.to_i
       end
 
-      # points = Point.record_limit(50000).batch(2500).where(friendly_id: params['friendly_id']).all
-      #               .reject{ |u| u['user_name'] == '_prize' }.sort do |a, b|
-      #                 b.create_date.to_i <=> a.create_date.to_i
-      #               end
-
       if points
         render_and_log_to_db(json: { result: points }, status: 200)
       else
@@ -188,8 +111,6 @@ module Api::V1
           create_date: DateTime.now
         )
         point.save
-        # CacheLeaderboard.perform_async
-        # CacheRecent.perform_async
         render_and_log_to_db(json: { result: point }, status: 200)
       else
         render_and_log_to_db(json: { error: 'Please enter a valid secret.' }, status: 400)
@@ -236,8 +157,6 @@ module Api::V1
             user[:names] = user[:names].append(allowed_params['user']['name']).compact.uniq
             user.save
 
-            # CacheLeaderboard.perform_async
-            # CacheRecent.perform_async
             render_and_log_to_db(json: { result: point }, status: 200)
           else
             render_and_log_to_db(json: { error: "This #{point['friendly_name']} has already been captured by #{point[:user_name]}." }, status: 400)
@@ -312,9 +231,6 @@ module Api::V1
       Recent.create(
         id: point.id
       )
-
-      # CacheLeaderboard.perform_async
-      # CacheRecent.perform_async
     end
 
     private
