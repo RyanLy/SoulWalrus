@@ -12,4 +12,6 @@ class Point
   field :user_id
   field :create_date, :datetime
   field :capture_date, :datetime
+
+  global_secondary_index hash_key: :friendly_id
 end

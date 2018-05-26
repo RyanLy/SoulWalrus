@@ -6,40 +6,50 @@ module Api::V1
       result = {}
 
       User.all.reject { |u| u['user_id'] == '-1' }.each do |user|
+        # Does not show 'Not Claimed' anymore
         user_name = user[:user_name] || 'Not Claimed'
         user_id = user[:user_id] || 'Not Claimed'
-        result[user_id] = {
-          'user_name' => user_name,
-          'points' => user[:points].values.inject(0) { |sum, val| sum + val.length }
-        }
+
+        unless result[user_id]
+          result[user_id] = {
+            'user_name' => user_name,
+            'points' => 0
+          }
+        end
+
+        result[user_id]['points'] = result[user_id]['points'] + user[:points].length
       end
+
       render_and_log_to_db(json: { result: Hash[result.sort_by { |_key, value| value['points'].to_int }.reverse] }, status: 200)
     end
 
-    def self.refresh_and_cache_leaderboard
-      result = {}
-
+    def leaderboard
+      users = {}
       User.all.reject { |u| u['user_id'] == '-1' }.each do |user|
         user_name = user[:user_name] || 'Not Claimed'
         user_id = user[:user_id] || 'Not Claimed'
 
-        best_pokmemon_id = get_best_pokemon(user[:points])
-        best_pokemon = create_point_obj(best_pokmemon_id)
+        unless users[user_id]
+          users[user_id] = {
+            user_name: user_name,
+            points: {}
+          }
+        end
+        users[user_id][:points][user[:friendly_id]] = user[:points]
+      end
 
+      result = {}
+      users.each do |user_id, user|
+        best_pokmemon_id = Api::V1::PointController.get_best_pokemon(user[:points])
+        best_pokemon = Api::V1::PointController.create_point_obj(best_pokmemon_id)
         result[user_id] = {
-          'user_name' => user_name,
+          'user_name' => user[:user_name],
           'points' => user[:points].values.inject(0) { |sum, val| sum + val.length },
-          'poke_value' => calculate_points(user[:points]),
+          'poke_value' => Api::V1::PointController.calculate_points(user[:points]),
           'best_pokemon' => best_pokemon
         }
       end
-      result
-    end
-
-
-    def leaderboard
-      leaderboardCachedResponse = Api::V1::PointController.refresh_and_cache_leaderboard
-      render_and_log_to_db(json: { result: Hash[leaderboardCachedResponse.sort_by { |_key, value| value['poke_value'].to_f }.reverse] }, status: 200)
+      render_and_log_to_db(json: { result: Hash[result.sort_by { |_key, value| value['poke_value'].to_f }.reverse] }, status: 200)
     end
 
     def get_most_recent
@@ -55,7 +65,15 @@ module Api::V1
     end
 
     def get_user
-      user = User.where(user_name: allowed_params['user_name']).all.first
+      query = User.where(user_name: allowed_params['user_name'])
+
+      user = {
+        points: {}
+      }
+
+      query.each do |query_user|
+        user[:points][query_user[:friendly_id]] = query_user[:points]
+      end
 
       results = {}
       values = user[:points].map do |id, value|
@@ -83,12 +101,8 @@ module Api::V1
     end
 
     def get_pokemon
-      users = User.all.reject { |u| u['user_name'] == '_prize' }
-      list_of_point_ids = users.map do |user|
-        user[:points][params['friendly_id'].to_i] || []
-      end.flatten
-
-      points = Point.find_all(list_of_point_ids).sort do |a, b|
+      # friendly_id is a string in the Points table
+      points = Point.where(friendly_id: params['friendly_id'].to_i).sort do |a, b|
         b.create_date.to_i <=> a.create_date.to_i
       end
 
@@ -131,13 +145,27 @@ module Api::V1
           if !point
             render_and_log_to_db(json: { error: 'Invalid point id. Nice try...' }, status: 400)
           elsif point.user.nil?
-            user = User.find_by_id(allowed_params['user']['id'])
+            friendly_id = point[:friendly_id].to_i
+
+            user = User.where(
+              user_id: allowed_params['user']['id'],
+              friendly_id: friendly_id
+            ).first
+
+            unless user
+              user = User.where(user_id: allowed_params['user']['id']).first
+            end
+
             user ||= User.create(
               user_id: allowed_params['user']['id'],
               user_name: allowed_params['user']['name'] || allowed_params['user']['id'],
-              points: {},
+              friendly_id: friendly_id,
+              points: [],
               names: []
             )
+
+            user[:points] = (user[:points] || []).append(point[:id])
+            user[:names] = user[:names].append(allowed_params['user']['name']).compact.uniq
 
             point.user = {
               name: user[:user_name],
@@ -147,15 +175,9 @@ module Api::V1
             point.user_id = user[:user_id]
             point.capture_date = DateTime.now
             point.save
+            user.save
             Pusher.trigger('point', 'point_updated',
                            result: point)
-
-            friendly_id = point[:friendly_id].to_i
-            user[:points][friendly_id] = [] unless user[:points][friendly_id]
-
-            user[:points][friendly_id] = user[:points][friendly_id].append(point[:id])
-            user[:names] = user[:names].append(allowed_params['user']['name']).compact.uniq
-            user.save
 
             render_and_log_to_db(json: { result: point }, status: 200)
           else
@@ -189,7 +211,7 @@ module Api::V1
 
     def self.get_best_pokemon(points)
       results = {}
-      values = points.map do |id, _value|
+      points.each do |id, _value|
         results[get_id_weight(id)] = id
       end
       results.max.last
