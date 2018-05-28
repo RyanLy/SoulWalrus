@@ -13,5 +13,5 @@ class Point
   field :create_date, :datetime
   field :capture_date, :datetime
 
-  global_secondary_index hash_key: :friendly_id
+  global_secondary_index hash_key: :friendly_id, projected_attributes: :all
 end

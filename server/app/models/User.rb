@@ -11,8 +11,7 @@ class User
   field :label
   field :names, :array
 
-  global_secondary_index hash_key: :friendly_id
-  global_secondary_index hash_key: :user_name
+  global_secondary_index hash_key: :user_name, projected_attributes: :all
 
   validates_presence_of :user_id
   validates_presence_of :friendly_id
