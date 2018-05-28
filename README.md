@@ -37,10 +37,14 @@ or use a nice installer http://railsinstaller.org/en (Ruby 2.2)
 5. run `rails s Puma -b 0.0.0.0 -e development` in the `server` folder
 6. For production `rails s Puma -b 0.0.0.0 -e production`
 
-`bundle clean --force` to remove unused gem dependencies.
-
 Testing if the server ran properly.
 `http://localhost:3000/v1/eight_ball` should return a JSON response.
+
+**Notes:**
+`bundle clean --force` to remove unused gem dependencies.
+
+To connect to local `DynamoDb`, use this:
+`Aws::DynamoDB::Client.new(endpoint: 'http://localhost:8000')`
 
 Note that the pusher.js client/secrets for `development` are hardcoded into the app atm. Feel free to change them.
 
