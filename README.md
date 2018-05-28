@@ -11,7 +11,7 @@ OPTIONAL environment variables (Set the key in your environment variables with t
 - `STEAM_KEY` (steam) http://steamcommunity.com/dev/apikey
 
   Spotify is a bit complicated, as there is an oauth flow. https://developer.spotify.com/web-api/ But you will need the following keys, and hopefully they're self explanatory
-  - `SPOTIFY_REFRESH_TOKEN` 
+  - `SPOTIFY_REFRESH_TOKEN`
   - `SPOTIFY_CLIENT_ID`
   - `SPOTIFY_CLIENT_SECRET`
 
@@ -32,8 +32,8 @@ In the server folder.
 1. Get Ruby + gems + rails http://www.tutorialspoint.com/ruby-on-rails/rails-installation.htm
 or use a nice installer http://railsinstaller.org/en (Ruby 2.2)
 2. Read up some docs http://www.tutorialspoint.com/ruby-on-rails/
-3. run `bundle install` to install dependencies`
-4. Install memcached and run it. https://memcached.org/ or https://commaster.net/content/installing-memcached-windows (Windows)
+3. run `bundle install` to install dependencies
+4. open a new terminal, run dynamodb by running `java -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar -sharedDb` in the dynamodb folder
 5. run `rails s Puma -b 0.0.0.0 -e development` in the `server` folder
 6. For production `rails s Puma -b 0.0.0.0 -e production`
 
