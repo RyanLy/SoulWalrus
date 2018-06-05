@@ -23,7 +23,7 @@ class Main extends React.Component {
     super(props);
     this.state = {motd: false, open: false, textFieldValue: ''};
   }
-  
+
   handleOpen() {
    this.setState({open: true});
   };
@@ -37,7 +37,7 @@ class Main extends React.Component {
       textFieldValue: e.target.value
     });
   }
-  
+
   componentDidMount() {
     request
     .get('/v1/motd')
@@ -49,17 +49,17 @@ class Main extends React.Component {
       }
     });
 
-    channelMotd.bind('motd_update', (data) => {
+    channelMotd.bind('motd_update', data => {
       this.setState({
         motd: data.result.message
       });
     });
   }
-  
+
   componentWillUnmount() {
     channelMotd.unbind('motd_update');
   }
-  
+
   renderMotd() {
     return (
       <Card>
@@ -70,7 +70,7 @@ class Main extends React.Component {
       </Card>
     )
   }
-  
+
   render() {
     const actions = [
       <FlatButton
@@ -100,12 +100,12 @@ class Main extends React.Component {
         }
       />,
     ];
-    
+
     let refresh =  {
       display: 'inline-block',
       position: 'relative',
     };
-    
+
     return (
       <div>
         <div className="container">
@@ -137,7 +137,7 @@ class Main extends React.Component {
                  onChange={this._handleTextFieldChange.bind(this)}
                />
            </Dialog>
-        </div>          
+        </div>
       </div>
     )
   }

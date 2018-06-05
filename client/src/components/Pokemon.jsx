@@ -27,7 +27,7 @@ class Pokemon extends React.Component {
       leaderboard: {},
     };
   }
-  
+
   componentDidMount() {
     window.mobileAndTabletcheck = function() {
       var check = false;
@@ -39,7 +39,6 @@ class Pokemon extends React.Component {
       Notification.requestPermission()
     }
 
-    
     request
     .get('/v1/point/most-recent')
     .end((err, res) => {
@@ -58,7 +57,7 @@ class Pokemon extends React.Component {
       });
     });
 
-    channelPoint.bind('point_created', function(data) {
+    channelPoint.bind('point_created', () => {
       request
       .get('/v1/point/most-recent')
       .end((err, res) => {
@@ -67,8 +66,8 @@ class Pokemon extends React.Component {
         });
       });
     })
-    
-    channelPoint.bind('point_updated', function(data) {
+
+    channelPoint.bind('point_updated', () => {
       request
       .get('/v1/point/most-recent')
       .end((err, res) => {
@@ -78,7 +77,7 @@ class Pokemon extends React.Component {
       });
     })
   }
-  
+
   componentWillUnmount() {
     channelPoint.unbind('point_created');
     channelPoint.unbind('point_updated');

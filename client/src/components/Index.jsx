@@ -9,7 +9,7 @@ import FontIcon from 'material-ui/FontIcon';
 import {brown500, blue500} from 'material-ui/styles/colors';
 
 class Index extends React.Component {
-  
+
   constructor(props) {
     super(props);
     this.state = {open: false, points: []};
@@ -25,31 +25,31 @@ class Index extends React.Component {
 
     if (!window.mobileAndTabletcheck()) {
       Notification.requestPermission()
-      
+
       let pusher = new Pusher(ENVIRONMENT.PUSHER_APP_ID, {
         encrypted: true
       });
-      
+
       let channelPoint = pusher.subscribe('point');
 
-      channelPoint.bind('point_created', function(data) {
+      channelPoint.bind('point_created', () => {
         request
         .get('/v1/point/most-recent')
-        .end(function(err, res){
+        .end((err, res) => {
           let notif = new Notification(`A pokemon has appeared! It's ${res.body.result[0].friendly_name}!`,
                                        {icon: `https://s3.amazonaws.com/soulwalruspokemon/${('000' + res.body.result[0].friendly_id).substr(-3)}.png`})
-          setTimeout(function(){  
+          setTimeout(function(){
               notif.close();
           }, 10000);
         });
       })
     }
   }
-  
+
   handleToggle() { this.setState({open: !this.state.open}) }
-      
+
   handleClose() { this.setState({open: false}) }
-  
+
   render() {
     return (
       <div>
