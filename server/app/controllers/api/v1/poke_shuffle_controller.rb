@@ -4,10 +4,10 @@ module Api::V1
       result = PokeShuffle.all.map do |entry|
         point = Point.find_by_id(entry.point_id)
         {
-          user_name: point.user_name == '_prize' ? 'Prize' : point.user_name,
-          friendly_name: point.friendly_name,
-          friendly_id: point.friendly_id,
-          value: point.value
+          user_name: point[:user_id] == '-1' ? 'Prize' : point[:user_name],
+          friendly_name: point[:friendly_name],
+          friendly_id: point[:friendly_id],
+          value: point[:value]
         }
       end
       render_and_log_to_db(json: { result: result }, status: 200)
@@ -16,7 +16,7 @@ module Api::V1
     def create
       if allowed_params[:point_secret] == ENV['POINT_SECRET']
         if !allowed_params[:friendly_name].nil?
-          allowed_user_id = allowed_params[:user]['id']
+          allowed_user_id = allowed_params[:user][:id]
           allowed_friendly_name = allowed_params[:friendly_name] || ''
           allowed_friendly_name_int = allowed_friendly_name.to_i
 
@@ -27,15 +27,21 @@ module Api::V1
                           Pokemon.name_to_number_info(allowed_friendly_name)
                         end
 
-          user = User.where(user_id: allowed_user_id, friendly_id: friendly_id).first || {}
-          point_id = (user[:points] || []).last if friendly_id
-          point = Point.find_by_id(point_id) if point_id
-
-          if !friendly_id
+          unless friendly_id
             render_and_log_to_db(json: { error: 'Please choose a valid pokemon to enter with.' }, status: 400)
-          elsif point
+            return
+          end
+
+          user_point = UserPoint.find_by_composite_key(allowed_user_id, friendly_id)
+          if user_point
+            point_id = user_point[:points].last
+            point = Point.find_by_id(point_id) if point_id
+          end
+
+          if point
             # Figure out if user is already entered
-            entered = PokeShuffle.where(user_id: allowed_params[:user]['id']).all.first
+            entered = PokeShuffle.where(user_id: allowed_user_id).all.first
+            user = User.find_by_id(allowed_user_id)
 
             if entered
               entered_pokemon = Point.find_by_id(entered.point_id)
@@ -45,15 +51,15 @@ module Api::V1
                                                   "This entry replaces #{entered_pokemon.friendly_name}(#{entered_pokemon.friendly_id}|#{entered_pokemon.value})." }, status: 200)
             else
               PokeShuffle.create(
-                user_id: allowed_params[:user]['id'],
+                user_id: allowed_user_id,
                 point_id: point.id
               )
               render_and_log_to_db(json: { result: "#{user.user_name}'s #{point.friendly_name}(#{point.friendly_id}|#{point.value}) has been entered into the tournament." }, status: 200)
             end
           else
-            available_points = ([friendly_id - 4, 0].max..[friendly_id + 4, Pokemon.pokemon_info.length].min).select do |friend_id|
-              user = User.where(user_id: allowed_user_id, friendly_id: friend_id).first
-              user && user[:points].length
+            available_points = ([friendly_id - 4, 0].max..[friendly_id + 4, Pokemon.pokemon_info.length].min).select do |friendly_id|
+              user_point = UserPoint.find_by_composite_key(allowed_user_id, friendly_id)
+              user_point && user_point[:points].length
             end
 
             # Recommendations
@@ -122,7 +128,7 @@ module Api::V1
       )
 
       PokeShuffle.create(
-        user_id: '_prize',
+        user_id: '-1',
         point_id: point.id
       )
 
@@ -132,7 +138,7 @@ module Api::V1
     def create_prize
       if allowed_params[:point_secret] == ENV['POINT_SECRET']
 
-        if PokeShuffle.where(user_id: '_prize').first
+        if PokeShuffle.where(user_id: '-1').first
           render_and_log_to_db(json: { error: 'A prize is already created.' }, status: 400)
         else
           point = create_point_and_shuffle
@@ -149,7 +155,7 @@ module Api::V1
         Point.find_by_id(entry.point_id)
       end.compact
 
-      player_entries = entries.reject { |point| point.user_name == '_prize' }
+      player_entries = entries.reject { |point| point.user_id == '-1' }
 
       if !player_entries.empty?
         sum_ids = player_entries.reduce(0) { |sum, obj| sum + obj.value.to_f }
@@ -168,14 +174,15 @@ module Api::V1
           total += current_id
         end
 
-        poke_names = entries.map { |entry| "#{entry.user_name}'s #{entry.friendly_name}(#{entry.friendly_id}|#{entry.value})" }
+        poke_names = entries.map { |entry| "#{User.find_by_id(entry.user_id)[:user_name]}'s #{entry.friendly_name}(#{entry.friendly_id}|#{entry.value})" }
         sum_all_ids = entries.reduce(0) { |sum, obj| sum + obj.value.to_f }
 
+        winner_user = User.find_by_id(winner.user_id)
         entries.each do |entry|
           entry_friendly_id = entry[:friendly_id].to_i
 
           # Could be the _prize
-          loser = User.where(user_id: entry.user_id, friendly_id: entry_friendly_id).first
+          loser = UserPoint.where(user_id: entry.user_id, friendly_id: entry_friendly_id).first
           if loser
             loser[:points] = (loser[:points] || []).reject do |point_id|
               point_id == entry[:id]
@@ -183,23 +190,21 @@ module Api::V1
             loser.save
           end
 
-          winner_user = User.where(user_id: winner.user_id, friendly_id: entry_friendly_id).first
-          if winner_user
-            winner_user[:points] = (winner_user[:points] || []).append(entry[:id]).uniq
-            winner_user.save
+          winner_user_point = UserPoint.find_by_composite_key(winner.user_id, entry_friendly_id)
+          if winner_user_point
+            winner_user_point[:points] = (winner_user_point[:points] || []).append(entry[:id]).uniq
+            winner_user_point.save
           else
-            user_model = User.where(user_id: winner.user_id).first
-            winner_user ||= User.create(
-              user_id: user_model[:user_id],
-              user_name: user_model[:user_name],
+            UserPoint.create(
+              user_id: winner_user[:user_id],
               friendly_id: entry_friendly_id,
               points: [entry[:id]],
-              names: user_model[:names]
             )
           end
 
-          entry.user_name = winner_user[:user_name]
+          # Write the new owner of the entries
           entry.user_id = winner_user[:user_id]
+          entry.user_name = winner_user[:user_name]
           entry.create_date = DateTime.now if entry.create_date.nil?
           entry.capture_date = DateTime.now
           entry.save
@@ -207,9 +212,9 @@ module Api::V1
 
         PokeShuffle.all.each(&:delete)
 
-        p "Tourney ends!\n#{winner.user_name} Wins (+#{sum_all_ids})! #{winner.user_name} has obtained #{poke_names.join(', ')}"
+        p "Tourney ends!\n#{winner_user.user_name} Wins (+#{sum_all_ids})! #{winner_user.user_id} has obtained #{poke_names.join(', ')}"
         Pusher.trigger('poke_shuffle', 'tourney_end',
-                       result: "Tourney ends!\n#{winner.user_name} Wins (+#{sum_all_ids.round(2)})! #{winner.user_name} has obtained #{poke_names.join(', ')}")
+                       result: "Tourney ends!\n#{winner_user.user_name} Wins (+#{sum_all_ids.round(2)})! #{User.find_by_id(winner_user.user_id)[:user_name]} has obtained #{poke_names.join(', ')}")
       else
         p 'Tourney ends! There is no winner.'
         PokeShuffle.all.each(&:delete)
@@ -221,7 +226,7 @@ module Api::V1
 
     def self.start_tourney
       p 'Start Tourney'
-      if PokeShuffle.where(user_id: '_prize').all.first
+      if PokeShuffle.where(user_id: '-1').all.first
         p 'A tourney is already started..'
       else
         point = create_point_and_shuffle

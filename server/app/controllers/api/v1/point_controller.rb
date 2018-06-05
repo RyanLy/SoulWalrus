@@ -3,94 +3,80 @@ module Api::V1
     @@point_update_mutex = {}
 
     def index
-      result = {}
-
-      User.all.reject { |u| u['user_id'] == '-1' }.each do |user|
-        # Does not show 'Not Claimed' anymore
-        user_name = user[:user_name] || 'Not Claimed'
-        user_id = user[:user_id] || 'Not Claimed'
-
-        unless result[user_id]
-          result[user_id] = {
-            'user_name' => user_name,
-            'points' => 0
-          }
-        end
-
-        result[user_id]['points'] = result[user_id]['points'] + user[:points].length
+      users = {}
+      User.all.reject { |u| u[:user_id] == '-1' }.each do |user|
+        users[user[:user_id]] = {
+          user_name: user[:user_name],
+          points: 0
+        }
       end
 
-      render_and_log_to_db(json: { result: Hash[result.sort_by { |_key, value| value['points'].to_int }.reverse] }, status: 200)
+      users.keys.each do |user_id|
+        UserPoint.where(user_id: user_id).each do |user_point|
+          users[user_id][:points] = users[user_id][:points] + user_point[:points].length
+        end
+      end
+      render_and_log_to_db(json: { result: Hash[users.sort_by { |_key, value| value[:points].to_int }.reverse] }, status: 200)
     end
 
     def leaderboard
       users = {}
-      User.all.reject { |u| u['user_id'] == '-1' }.each do |user|
-        user_name = user[:user_name] || 'Not Claimed'
-        user_id = user[:user_id] || 'Not Claimed'
+      User.all.reject { |u| u[:user_id] == '-1' }.each do |user|
+        users[user[:user_id]] = {
+          user_name: user[:user_name],
+          points: {}
+        }
+      end
 
-        unless users[user_id]
-          users[user_id] = {
-            user_name: user_name,
-            points: {}
-          }
+      users.keys.each do |user_id|
+        UserPoint.where(user_id: user_id).each do |user_point|
+          users[user_id][:points][user_point[:friendly_id]] = user_point[:points]
         end
-        users[user_id][:points][user[:friendly_id]] = user[:points]
       end
 
       result = {}
       users.each do |user_id, user|
-        best_pokmemon_id = Api::V1::PointController.get_best_pokemon(user[:points])
-        best_pokemon = Api::V1::PointController.create_point_obj(best_pokmemon_id)
+        unless user[:points].empty?
+          best_pokmemon_id = Api::V1::PointController.get_best_pokemon(user[:points])
+          best_pokemon = Api::V1::PointController.create_point_obj(best_pokmemon_id)
+        end
         result[user_id] = {
-          'user_name' => user[:user_name],
-          'points' => user[:points].values.inject(0) { |sum, val| sum + val.length },
-          'poke_value' => Api::V1::PointController.calculate_points(user[:points]),
-          'best_pokemon' => best_pokemon
+          user_name: user[:user_name],
+          points: user[:points].values.inject(0) { |sum, val| sum + val.length },
+          poke_value: Api::V1::PointController.calculate_points(user[:points]),
+          best_pokemon: best_pokemon
         }
       end
-      render_and_log_to_db(json: { result: Hash[result.sort_by { |_key, value| value['poke_value'].to_f }.reverse] }, status: 200)
+      render_and_log_to_db(json: { result: Hash[result.sort_by { |_key, value| value[:poke_value].to_f }.reverse] }, status: 200)
     end
 
     def get_most_recent
       recents = Recent.all.sort_by(&:created_at)
-
       recent_ids = recents.map(&:id).reverse
 
       results = Point.find_all(recent_ids.first(5)).sort_by(&:created_at).reverse.to_a
-
       recents[0..-6].each(&:delete) if recents.length > 10
 
       render_and_log_to_db(json: { result: results }, status: 200)
     end
 
     def get_user
-      query = User.where(user_name: allowed_params['user_name'])
-
-      user = {
-        points: {}
-      }
-
-      query.each do |query_user|
-        user[:points][query_user[:friendly_id]] = query_user[:points]
-      end
+      user_model = User.where(user_name: allowed_params[:user_name]).first
+      user_points = UserPoint.where(user_id: user_model[:user_id])
 
       results = {}
-      values = user[:points].map do |id, value|
-        results[Api::V1::PointController.get_id_weight(id)] = value
+      user_points.each do |user_point|
+        results[Api::V1::PointController.get_id_weight(user_point[:friendly_id].to_i)] = user_point[:points]
       end
 
       points_to_query = []
       results.sort.reverse.each do |_value, point_ids|
-        if points_to_query.length < 100
-          points_to_query += point_ids
-        else
-          break
-        end
+        break if points_to_query.length > 99
+        points_to_query += point_ids
       end
 
       points = Point.find_all(points_to_query).sort_by do |point|
-        [point[:value], point[:capture_date]]
+        [Api::V1::PointController.get_id_weight(point[:friendly_id].to_i), point[:capture_date]]
       end.reverse
 
       if points
@@ -102,7 +88,7 @@ module Api::V1
 
     def get_pokemon
       # friendly_id is a string in the Points table
-      points = Point.where(friendly_id: params['friendly_id'].to_i).sort do |a, b|
+      points = Point.where(friendly_id: params[:friendly_id].to_i).reject { |u| u[:user_id] == '-1' }.sort do |a, b|
         b.create_date.to_i <=> a.create_date.to_i
       end
 
@@ -114,14 +100,12 @@ module Api::V1
     end
 
     def create
-      render_and_log_to_db(json: { error: 'Non-existent secret' }, status: 400) unless allowed_params['point_secret']
+      render_and_log_to_db(json: { error: 'Non-existent secret' }, status: 400) unless allowed_params[:point_secret]
 
-      if allowed_params['point_secret'] == ENV['POINT_SECRET']
+      if allowed_params[:point_secret] == ENV['POINT_SECRET']
         point = Point.new(
-          user: nil,
-          user_name: nil,
           user_id: nil,
-          description: 'Points v1',
+          description: 'Points v1.1',
           create_date: DateTime.now
         )
         point.save
@@ -132,59 +116,67 @@ module Api::V1
     end
 
     def update
-      render_and_log_to_db(json: { error: 'Please specify a chatid' }, status: 400) unless allowed_params['user']
-      render_and_log_to_db(json: { error: 'Non-existent secret' }, status: 400) unless allowed_params['point_secret']
-      render_and_log_to_db(json: { error: 'Please specify an point_id' }, status: 400) unless allowed_params['point_id']
+      point_id = allowed_params[:point_id]
+      user_id = allowed_params[:user][:id]
+      user_name_param = allowed_params[:user][:name]
 
-      if allowed_params['point_secret'] == ENV['POINT_SECRET']
-        unless @@point_update_mutex[allowed_params['point_id']]
-          @@point_update_mutex[allowed_params['point_id']] = Mutex.new
+      render_and_log_to_db(json: { error: 'Please specify a chatid' }, status: 400) unless allowed_params[:user]
+      render_and_log_to_db(json: { error: 'Non-existent secret' }, status: 400) unless allowed_params[:point_secret]
+      render_and_log_to_db(json: { error: 'Please specify an point_id' }, status: 400) unless allowed_params[:point_id]
+
+      if allowed_params[:point_secret] == ENV['POINT_SECRET']
+        unless @@point_update_mutex[point_id]
+          @@point_update_mutex[point_id] = Mutex.new
         end
-        @@point_update_mutex[allowed_params['point_id']].synchronize do
-          point = Point.find_by_id(allowed_params['point_id'])
+        @@point_update_mutex[point_id].synchronize do
+          point = Point.find_by_id(point_id)
           if !point
             render_and_log_to_db(json: { error: 'Invalid point id. Nice try...' }, status: 400)
-          elsif point.user.nil?
-            friendly_id = point[:friendly_id].to_i
-
-            user = User.where(
-              user_id: allowed_params['user']['id'],
-              friendly_id: friendly_id
-            ).first
-
+          elsif point[:user_id].nil?
+            user = User.find_by_id(user_id)
             unless user
-              user = User.where(user_id: allowed_params['user']['id']).first
+              user_name = user_name_param || user_id
+              user ||= User.create(
+                user_id: user_id,
+                user_name: user_name,
+                names: [user_name]
+              )
+            end
+            user[:names] = user[:names].append(user_name_param).compact.uniq
+            user.save
+
+            friendly_id = point[:friendly_id].to_i
+            user_point = UserPoint.find_by_composite_key(user[:user_id], friendly_id)
+            unless user_point
+              user_point ||= UserPoint.create(
+                user_id: user[:user_id],
+                friendly_id: friendly_id,
+                points: []
+              )
             end
 
-            user ||= User.create(
-              user_id: allowed_params['user']['id'],
-              user_name: allowed_params['user']['name'] || allowed_params['user']['id'],
-              friendly_id: friendly_id,
-              points: [],
-              names: []
-            )
+            user_point[:points] = (user_point[:points] || []).append(point[:id])
+            point.user_id = user[:user_id]
+            # TODO: Remove user_name in point model
+            point.user_name = user[:user_name]
+            point.capture_date = DateTime.now
 
-            user[:points] = (user[:points] || []).append(point[:id])
-            user[:names] = user[:names].append(allowed_params['user']['name']).compact.uniq
+            point.save
+            user_point.save
 
             point.user = {
               name: user[:user_name],
               id: user[:user_id]
             }
-            point.user_name = user[:user_name]
-            point.user_id = user[:user_id]
-            point.capture_date = DateTime.now
-            point.save
-            user.save
-            Pusher.trigger('point', 'point_updated',
-                           result: point)
 
+            Pusher.trigger('point', 'point_updated',  result: point)
             render_and_log_to_db(json: { result: point }, status: 200)
           else
-            render_and_log_to_db(json: { error: "This #{point['friendly_name']} has already been captured by #{point[:user_name]}." }, status: 400)
+            user = User.find_by_id(point[:user_id])
+            render_and_log_to_db(json: { error: "This #{point[:friendly_name]} has already been captured by #{user[:user_name]}." }, status: 400)
           end
         end
-        @@point_update_mutex.delete(allowed_params['point_id'])
+        @@point_update_mutex.delete(allowed_params[:point_id])
       else
         render_and_log_to_db(json: { error: 'Please enter a valid secret.' }, status: 400)
       end
@@ -241,15 +233,13 @@ module Api::V1
         user: nil,
         user_name: nil,
         user_id: nil,
-        description: 'Points v1',
+        description: 'Points v1.1',
         create_date: DateTime.now,
         friendly_id: n,
         value: get_id_weight(n),
         friendly_name: Pokemon.pokemon_info[n - 1][:name].capitalize
       )
-      Pusher.trigger('point', 'point_created',
-                     result: point)
-
+      Pusher.trigger('point', 'point_created', result: point)
       Recent.create(
         id: point.id
       )
