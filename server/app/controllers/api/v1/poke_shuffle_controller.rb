@@ -93,16 +93,6 @@ module Api::V1
       end
     end
 
-    def self.get_id_weight(id)
-      if id > 251
-        ((id - 251) * 151.0 / 135).round(2)
-      elsif id > 151
-        (id - 151) * 151.0 / 100
-      else
-        id
-      end
-    end
-
     def self.create_point_and_shuffle
       c = 22_952
       (0..10).each do |_|
@@ -123,7 +113,7 @@ module Api::V1
         user_name: '_prize',
         user_id:  '-1',
         friendly_id: n,
-        value: get_id_weight(n),
+        value: Point.get_id_weight(n),
         friendly_name: Pokemon.pokemon_info[n - 1][:name].capitalize
       )
 
@@ -182,7 +172,7 @@ module Api::V1
           entry_friendly_id = entry[:friendly_id].to_i
 
           # Could be the _prize
-          loser = UserPoint.where(user_id: entry.user_id, friendly_id: entry_friendly_id).first
+          loser = UserPoint.find_by_composite_key(entry.user_id, entry_friendly_id)
           if loser
             loser[:points] = (loser[:points] || []).reject do |point_id|
               point_id == entry[:id]

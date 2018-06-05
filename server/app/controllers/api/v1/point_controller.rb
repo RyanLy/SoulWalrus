@@ -37,13 +37,13 @@ module Api::V1
       result = {}
       users.each do |user_id, user|
         unless user[:points].empty?
-          best_pokmemon_id = Api::V1::PointController.get_best_pokemon(user[:points])
+          best_pokmemon_id = Point.get_best_point(user[:points])
           best_pokemon = Api::V1::PointController.create_point_obj(best_pokmemon_id)
         end
         result[user_id] = {
           user_name: user[:user_name],
           points: user[:points].values.inject(0) { |sum, val| sum + val.length },
-          poke_value: Api::V1::PointController.calculate_points(user[:points]),
+          poke_value: Point.calculate_points(user[:points]),
           best_pokemon: best_pokemon
         }
       end
@@ -62,11 +62,12 @@ module Api::V1
 
     def get_user
       user_model = User.where(user_name: allowed_params[:user_name]).first
+      p user_model
       user_points = UserPoint.where(user_id: user_model[:user_id])
 
       results = {}
       user_points.each do |user_point|
-        results[Api::V1::PointController.get_id_weight(user_point[:friendly_id].to_i)] = user_point[:points]
+        results[Point.get_id_weight(user_point[:friendly_id].to_i)] = user_point[:points]
       end
 
       points_to_query = []
@@ -76,7 +77,7 @@ module Api::V1
       end
 
       points = Point.find_all(points_to_query).sort_by do |point|
-        [Api::V1::PointController.get_id_weight(point[:friendly_id].to_i), point[:capture_date]]
+        [Point.get_id_weight(point[:friendly_id].to_i), point[:capture_date]]
       end.reverse
 
       if points
@@ -182,37 +183,10 @@ module Api::V1
       end
     end
 
-    def self.get_id_weight(id)
-      if id > 251
-        ((id - 251) * 151.0 / 135).round(2)
-      elsif id > 151
-        (id - 151) * 151.0 / 100
-      else
-        id
-      end
-    end
-
-    def self.calculate_points(points)
-      point = 0
-      points.each do |id, number|
-        point += (number.length * get_id_weight(id))
-      end
-
-      point.round(2)
-    end
-
-    def self.get_best_pokemon(points)
-      results = {}
-      points.each do |id, _value|
-        results[get_id_weight(id)] = id
-      end
-      results.max.last
-    end
-
     def self.create_point_obj(id)
       {
         friendly_id: id,
-        value: get_id_weight(id),
+        value: Point.get_id_weight(id),
         friendly_name: Pokemon.pokemon_info[id - 1][:name].capitalize
       }
     end
@@ -236,7 +210,7 @@ module Api::V1
         description: 'Points v1.1',
         create_date: DateTime.now,
         friendly_id: n,
-        value: get_id_weight(n),
+        value: Point.get_id_weight(n),
         friendly_name: Pokemon.pokemon_info[n - 1][:name].capitalize
       )
       Pusher.trigger('point', 'point_created', result: point)
