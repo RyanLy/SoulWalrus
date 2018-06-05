@@ -62,7 +62,6 @@ module Api::V1
 
     def get_user
       user_model = User.where(user_name: allowed_params[:user_name]).first
-      p user_model
       user_points = UserPoint.where(user_id: user_model[:user_id])
 
       results = {}
