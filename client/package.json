@@ -11,7 +11,7 @@
   "dependencies": {
     "extract-text-webpack-plugin": "1.0.1",
     "gutil": "1.6.4",
-    "moment": "2.14.1",
+    "moment": "2.19.3",
     "react": "15.3.0",
     "react-dom": "15.3.0",
     "react-router": "2.6.1",
