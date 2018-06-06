@@ -29,9 +29,15 @@ var webpackConfig = {
         exclude: /node_modules/
       },
       {
-          test: /\.sass$/,
-          loader: ExtractTextPlugin.extract("style-loader", "css-loader!sass-loader"),
-          include: path.join(__dirname, "styles")
+        test: /\.scss$/,
+        loader: ExtractTextPlugin.extract('style-loader', 'css-loader!sass-loader'),
+        include: path.join(__dirname, 'styles'),
+
+      },
+      // Url loader for bootstrap
+      {
+        test: /\.(png|woff|woff2|eot|ttf|svg)$/,
+        loader: 'url-loader?limit=100000',
       },
     ]
   },
