@@ -40,16 +40,21 @@ Rails.application.configure do
 
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
+
+  # Memcache
+  # config.cache_store = :dalli_store, 'localhost', { :pool_size => 5, :expires_in => 1.day, :compress => true }
+  config.action_controller.perform_caching = false
 end
 
 Dynamoid.configure do |config|
-    config.adapter = 'aws_sdk_v2' # This adapter establishes a connection to the DynamoDB servers using Amazon's own AWS gem.
-    config.namespace = 'soulwalrus_development' # To namespace tables created by Dynamoid from other tables you might have. Set to nil to avoid namespacing.
-    config.warn_on_scan = true # Output a warning to the logger when you perform a scan rather than a query on a table.
-    config.read_capacity = 1 # Read capacity for your tables
-    config.write_capacity = 1 # Write capacity for your tables
-  end
-  
+  config.adapter = 'aws_sdk_v2' # This adapter establishes a connection to the DynamoDB servers using Amazon's own AWS gem.
+  config.namespace = 'soulwalrus_development' # To namespace tables created by Dynamoid from other tables you might have. Set to nil to avoid namespacing.
+  config.warn_on_scan = true # Output a warning to the logger when you perform a scan rather than a query on a table.
+  config.read_capacity = 1 # Read capacity for your tables
+  config.write_capacity = 1 # Write capacity for your tables
+  config.endpoint = 'http://localhost:8000' # Comment this line if connecting to remote
+end
+
 Pusher.app_id = '202818'
 Pusher.key = 'd7bac04aba128fb95645'
 Pusher.secret = '0a9c4fd3d52477493b71'

@@ -12,11 +12,7 @@ class PokeTable extends React.Component {
   constructor(props) {
     super(props);
   }
-  
-  componentDidMount() {
-    Notification.requestPermission()
-  }
-  
+
   renderUserNameLink(user_name) {
     return(
           user_name

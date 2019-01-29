@@ -1,7 +1,7 @@
 class Log
   include Dynamoid::Document
 
-  table :name => :logs, :key => :action
+  table name: :logs, key: :action
   range :created_at, :datetime
 
   field :controller

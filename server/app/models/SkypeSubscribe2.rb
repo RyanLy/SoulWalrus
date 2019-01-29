@@ -1,7 +1,7 @@
 class SkypeSubscribe2
   include Dynamoid::Document
 
-  table :name => :skype_subscribe2, :key => :convo_id
+  table name: :skype_subscribe2, key: :convo_id
 
   field :convo_id
   field :channelId

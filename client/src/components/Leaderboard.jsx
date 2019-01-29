@@ -69,7 +69,7 @@ class Leaderboard extends React.Component {
             result.map((obj) => {
               return (
                 <TableRow key={obj.key}>
-                  <TableRowColumn>{this.renderUserNameLink(obj.key)}</TableRowColumn>
+                  <TableRowColumn>{this.renderUserNameLink(obj.user_name)}</TableRowColumn>
                   <TableRowColumn>{obj.points}</TableRowColumn>
                   <TableRowColumn>{obj.poke_value}</TableRowColumn>
                   <TableRowColumn className='hidden-xs'><PokeImage point={obj.best_pokemon} /></TableRowColumn>
